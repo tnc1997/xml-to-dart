@@ -69,7 +69,13 @@ Future<void> main(
       await for (final events in file.openRead().transform(transformer)) {
         for (final event in events) {
           if (event is XmlStartElementEvent) {
-            classes[event.name.pascalCase] = {};
+            final fields = classes[event.name.pascalCase] ?? <String>{};
+
+            for (final attribute in event.attributes) {
+              fields.add(attribute.name.camelCase);
+            }
+
+            classes[event.name.pascalCase] = fields;
           }
         }
       }

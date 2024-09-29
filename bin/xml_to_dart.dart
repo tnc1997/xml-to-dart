@@ -4,8 +4,20 @@ final parser = ArgParser()
   ..addFlag(
     'help',
     abbr: 'h',
-    negatable: false,
     help: 'Print this usage information.',
+    negatable: false,
+  )
+  ..addOption(
+    'input',
+    abbr: 'i',
+    help: 'The input file or directory.',
+    mandatory: true,
+  )
+  ..addOption(
+    'output',
+    abbr: 'o',
+    help: 'The output file or directory.',
+    mandatory: false,
   );
 
 void main(

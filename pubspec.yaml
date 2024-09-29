@@ -1,0 +1,14 @@
+name: xml_to_dart
+description: A sample command-line application with basic argument parsing.
+version: 0.0.0
+repository: https://github.com/tnc1997/xml-to-dart
+
+environment:
+  sdk: ^2.12.0
+
+dependencies:
+  args: ^2.0.0
+
+dev_dependencies:
+  lints: ^4.0.0
+  test: ^1.24.0

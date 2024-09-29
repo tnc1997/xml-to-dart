@@ -69,13 +69,29 @@ Future<void> main(
       await for (final events in file.openRead().transform(transformer)) {
         for (final event in events) {
           if (event is XmlStartElementEvent) {
-            final fields = classes[event.name.pascalCase] ?? <String>{};
+            final fields = <String>{};
 
             for (final attribute in event.attributes) {
-              fields.add(attribute.name.camelCase);
+              fields.add(
+                const CamelCaseNamer().name(
+                  attribute.localName,
+                  attribute.namespacePrefix,
+                ),
+              );
             }
 
-            classes[event.name.pascalCase] = fields;
+            classes.update(
+              const PascalCaseNamer().name(
+                event.localName,
+                event.namespacePrefix,
+              ),
+              (value) {
+                return {...value, ...fields};
+              },
+              ifAbsent: () {
+                return fields;
+              },
+            );
           }
         }
       }
@@ -83,4 +99,61 @@ Future<void> main(
   }
 
   print(classes);
+}
+
+abstract class Namer {
+  const Namer();
+
+  String name(
+    String local, [
+    String? prefix,
+  ]);
+}
+
+class CamelCaseNamer implements Namer {
+  const CamelCaseNamer();
+
+  @override
+  String name(
+    String local, [
+    String? prefix,
+  ]) {
+    if (prefix != null) {
+      return '${prefix.camelCase}${local.pascalCase}';
+    }
+
+    return local.camelCase;
+  }
+}
+
+class PascalCaseNamer implements Namer {
+  const PascalCaseNamer();
+
+  @override
+  String name(
+    String local, [
+    String? prefix,
+  ]) {
+    if (prefix != null) {
+      return '${prefix.pascalCase}${local.pascalCase}';
+    }
+
+    return local.pascalCase;
+  }
+}
+
+class SnakeCaseNamer implements Namer {
+  const SnakeCaseNamer();
+
+  @override
+  String name(
+    String local, [
+    String? prefix,
+  ]) {
+    if (prefix != null) {
+      return '${prefix.snakeCase}_${local.snakeCase}';
+    }
+
+    return local.snakeCase;
+  }
 }

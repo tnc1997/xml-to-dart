@@ -1,4 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:args/args.dart';
+import 'package:glob/glob.dart';
+import 'package:glob/list_local_fs.dart';
+import 'package:path/path.dart';
+import 'package:recase/recase.dart';
+import 'package:xml/xml_events.dart';
 
 final parser = ArgParser()
   ..addFlag(
@@ -10,25 +18,31 @@ final parser = ArgParser()
   ..addOption(
     'input',
     abbr: 'i',
-    help: 'The input file or directory.',
+    help: 'The input file.',
     mandatory: true,
   )
   ..addOption(
     'output',
     abbr: 'o',
-    help: 'The output file or directory.',
+    help: 'The output directory.',
     mandatory: false,
   );
 
-void main(
+final transformer = const Utf8Decoder().fuse(
+  XmlEventDecoder(
+    withParent: true,
+  ),
+);
+
+Future<void> main(
   List<String> arguments,
-) {
+) async {
   final ArgResults results;
 
   try {
     results = parser.parse(arguments);
-  } catch (e) {
-    print(e);
+  } on ArgParserException catch (e) {
+    print(e.message);
     return;
   }
 
@@ -37,4 +51,30 @@ void main(
     print(parser.usage);
     return;
   }
+
+  final inputOption = results.option('input');
+  final input = inputOption != null ? Glob(inputOption) : null;
+  if (input == null) {
+    print('The option "input" is mandatory.');
+    return;
+  }
+
+  final output = results.option('output');
+
+  final classes = <String, Set<String>>{};
+
+  await for (final entity in input.list()) {
+    if (entity is File && extension(entity.path) == '.xml') {
+      final file = File(entity.path);
+      await for (final events in file.openRead().transform(transformer)) {
+        for (final event in events) {
+          if (event is XmlStartElementEvent) {
+            classes[event.name.pascalCase] = {};
+          }
+        }
+      }
+    }
+  }
+
+  print(classes);
 }

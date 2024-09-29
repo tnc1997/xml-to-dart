@@ -6,44 +6,23 @@ final parser = ArgParser()
     abbr: 'h',
     negatable: false,
     help: 'Print this usage information.',
-  )
-  ..addFlag(
-    'verbose',
-    abbr: 'v',
-    negatable: false,
-    help: 'Show additional command output.',
   );
 
-void printUsage(ArgParser parser) {
-  print('Usage: dart xml_to_dart.dart <flags> [arguments]');
-  print(parser.usage);
-}
+void main(
+  List<String> arguments,
+) {
+  final ArgResults results;
 
-void main(List<String> arguments) {
   try {
-    final results = parser.parse(arguments);
-    var verbose = false;
+    results = parser.parse(arguments);
+  } catch (e) {
+    print(e);
+    return;
+  }
 
-    // Process the parsed arguments.
-    if (results.wasParsed('help')) {
-      printUsage(parser);
-      return;
-    }
-
-    if (results.wasParsed('verbose')) {
-      verbose = true;
-    }
-
-    // Act on the arguments provided.
-    print('Positional arguments: ${results.rest}');
-
-    if (verbose) {
-      print('[VERBOSE] All arguments: ${results.arguments}');
-    }
-  } on FormatException catch (e) {
-    // Print usage information if an invalid argument was provided.
-    print(e.message);
-    print('');
-    printUsage(parser);
+  if (results.wasParsed('help')) {
+    print('Usage: dart xml_to_dart.dart <flags> [arguments]');
+    print(parser.usage);
+    return;
   }
 }

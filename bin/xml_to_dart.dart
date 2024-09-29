@@ -61,7 +61,7 @@ Future<void> main(
 
   final output = results.option('output');
 
-  final classes = <String, Set<String>>{};
+  final classes = <String, Map<String, String>>{};
 
   await for (final entity in input.list()) {
     if (entity is File && extension(entity.path) == '.xml') {
@@ -69,14 +69,19 @@ Future<void> main(
       await for (final events in file.openRead().transform(transformer)) {
         for (final event in events) {
           if (event is XmlStartElementEvent) {
-            final fields = <String>{};
+            final fields = <String, String>{};
 
             for (final attribute in event.attributes) {
-              fields.add(
+              fields.putIfAbsent(
                 const CamelCaseNamer().name(
                   attribute.localName,
                   attribute.namespacePrefix,
                 ),
+                () {
+                  return const Typer().type(
+                    attribute.value,
+                  );
+                },
               );
             }
 

@@ -157,3 +157,33 @@ class SnakeCaseNamer implements Namer {
     return local.snakeCase;
   }
 }
+
+class Typer {
+  const Typer();
+
+  String type(
+    String value,
+  ) {
+    if (int.tryParse(value) != null) {
+      return 'int';
+    }
+
+    if (double.tryParse(value) != null) {
+      return 'double';
+    }
+
+    if (DateTime.tryParse(value) != null) {
+      return 'DateTime';
+    }
+
+    if (Uri.tryParse(value) != null) {
+      return 'Uri';
+    }
+
+    if (value == 'true' || value == 'false') {
+      return 'bool';
+    }
+
+    return 'String';
+  }
+}

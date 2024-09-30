@@ -61,7 +61,7 @@ Future<void> main(
 
   final output = results.option('output');
 
-  final classes = <String, Map<String, String>>{};
+  final classes = <DartClass>{};
 
   await for (final entity in input.list()) {
     if (entity is File && extension(entity.path) == '.xml') {
@@ -69,33 +69,32 @@ Future<void> main(
       await for (final events in file.openRead().transform(transformer)) {
         for (final event in events) {
           if (event is XmlStartElementEvent) {
-            final fields = <String, String>{};
+            final fields = <DartField>{};
 
             for (final attribute in event.attributes) {
-              fields.putIfAbsent(
-                const CamelCaseNamer().name(
-                  attribute.localName,
-                  attribute.namespacePrefix,
-                ),
-                () {
-                  return const Typer().type(
+              fields.add(
+                DartField(
+                  name: const CamelCaseNamer().name(
+                    attribute.localName,
+                    attribute.namespacePrefix,
+                  ),
+                  namespace: attribute.namespaceUri,
+                  type: const Typer().type(
                     attribute.value,
-                  );
-                },
+                  ),
+                ),
               );
             }
 
-            classes.update(
-              const PascalCaseNamer().name(
-                event.localName,
-                event.namespacePrefix,
+            classes.add(
+              DartClass(
+                name: const PascalCaseNamer().name(
+                  event.localName,
+                  event.namespacePrefix,
+                ),
+                namespace: event.namespaceUri,
+                fields: fields,
               ),
-              (value) {
-                return {...value, ...fields};
-              },
-              ifAbsent: () {
-                return fields;
-              },
             );
           }
         }
@@ -104,6 +103,66 @@ Future<void> main(
   }
 
   print(classes);
+}
+
+class DartClass {
+  final String name;
+  final String? namespace;
+  final Set<DartField> fields;
+
+  const DartClass({
+    required this.name,
+    this.namespace,
+    required this.fields,
+  });
+
+  @override
+  int get hashCode {
+    return name.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is DartClass &&
+            runtimeType == other.runtimeType &&
+            name == other.name;
+  }
+
+  @override
+  String toString() {
+    return name;
+  }
+}
+
+class DartField {
+  final String name;
+  final String? namespace;
+  final String type;
+
+  const DartField({
+    required this.name,
+    this.namespace,
+    required this.type,
+  });
+
+  @override
+  int get hashCode {
+    return name.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is DartClass &&
+            runtimeType == other.runtimeType &&
+            name == other.name;
+  }
+
+  @override
+  String toString() {
+    return name;
+  }
 }
 
 abstract class Namer {

@@ -118,7 +118,7 @@ class DartClass {
 
   @override
   int get hashCode {
-    return name.hashCode;
+    return name.hashCode ^ namespace.hashCode;
   }
 
   @override
@@ -126,7 +126,8 @@ class DartClass {
     return identical(this, other) ||
         other is DartClass &&
             runtimeType == other.runtimeType &&
-            name == other.name;
+            name == other.name &&
+            namespace == other.namespace;
   }
 
   @override
@@ -148,15 +149,16 @@ class DartField {
 
   @override
   int get hashCode {
-    return name.hashCode;
+    return name.hashCode ^ namespace.hashCode;
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        other is DartClass &&
+        other is DartField &&
             runtimeType == other.runtimeType &&
-            name == other.name;
+            name == other.name &&
+            namespace == other.namespace;
   }
 
   @override

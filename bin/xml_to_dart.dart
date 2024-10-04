@@ -74,10 +74,7 @@ Future<void> main(
             for (final attribute in event.attributes) {
               fields.add(
                 DartField(
-                  name: const CamelCaseNamer().name(
-                    attribute.localName,
-                    attribute.namespaceUri,
-                  ),
+                  name: attribute.localName,
                   namespace: attribute.namespaceUri,
                   type: const Typer().type(
                     attribute.value,
@@ -88,10 +85,7 @@ Future<void> main(
 
             classes.add(
               DartClass(
-                name: const PascalCaseNamer().name(
-                  event.localName,
-                  event.namespaceUri,
-                ),
+                name: event.localName,
                 namespace: event.namespaceUri,
                 fields: fields,
               ),

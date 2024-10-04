@@ -8,6 +8,10 @@ import 'package:path/path.dart';
 import 'package:recase/recase.dart';
 import 'package:xml/xml_events.dart';
 
+const classNamer = PascalCaseNamer();
+const fieldNamer = CamelCaseNamer();
+const fileNamer = SnakeCaseNamer();
+
 final parser = ArgParser()
   ..addFlag(
     'help',
@@ -96,7 +100,120 @@ Future<void> main(
     }
   }
 
-  print(classes);
+  for (final class_ in classes) {
+    final name = class_.name;
+    final namespace = class_.namespace;
+    final fields = class_.fields;
+
+    final buffer = StringBuffer();
+
+    buffer.writeln(
+      'import \'package:xml/xml.dart\';',
+    );
+
+    buffer.writeln(
+      'import \'package:xml_annotation/xml_annotation.dart\' as annotation;',
+    );
+
+    buffer.writeln(
+      'part \'${fileNamer.name(name, namespace)}.g.dart\';',
+    );
+
+    buffer.write(
+      '@annotation.XmlRootElement(name: \'$name\'',
+    );
+
+    if (namespace != null) {
+      buffer.write(
+        ', namespace: \'$namespace\'',
+      );
+    }
+
+    buffer.writeln(
+      ')',
+    );
+
+    buffer.writeln(
+      '@annotation.XmlSerializable()',
+    );
+
+    buffer.writeln(
+      'class ${classNamer.name(name, namespace)} {',
+    );
+
+    if (fields.isNotEmpty) {
+      for (final field in fields) {
+        final name = field.name;
+        final namespace = field.namespace;
+        final type = field.type;
+
+        buffer.write(
+          '@annotation.XmlAttribute(name: \'$name\'',
+        );
+
+        if (namespace != null) {
+          buffer.write(
+            ', namespace: \'$namespace\'',
+          );
+        }
+
+        buffer.writeln(
+          ')',
+        );
+
+        buffer.writeln(
+          '$type ${fieldNamer.name(name, namespace)};',
+        );
+      }
+
+      buffer.writeln(
+        '${classNamer.name(name, namespace)}({',
+      );
+
+      for (final field in fields) {
+        final name = field.name;
+        final namespace = field.namespace;
+
+        buffer.writeln(
+          'this.${fieldNamer.name(name, namespace)}',
+        );
+      }
+
+      buffer.writeln(
+        '});',
+      );
+    }
+
+    buffer.writeln(
+      'factory ${classNamer.name(name, namespace)}.fromXmlElement(XmlElement element) => _\$${classNamer.name(name, namespace)}FromXmlElement(element);',
+    );
+
+    buffer.writeln(
+      'void buildXmlChildren(XmlBuilder builder, {Map<String, String> namespaces = const {}}) => _\$${classNamer.name(name, namespace)}BuildXmlChildren(this, builder, namespaces: namespaces);',
+    );
+
+    buffer.writeln(
+      'void buildXmlElement(XmlBuilder builder, {Map<String, String> namespaces = const {}}) => _\$${classNamer.name(name, namespace)}BuildXmlElement(this, builder, namespaces: namespaces);',
+    );
+
+    buffer.writeln(
+      'List<XmlAttribute> toXmlAttributes({Map<String, String?> namespaces = const {}}) => _\$${classNamer.name(name, namespace)}ToXmlAttributes(this, namespaces: namespaces);',
+    );
+
+    buffer.writeln(
+      'List<XmlNode> toXmlChildren({Map<String, String?> namespaces = const {}}) => _\$${classNamer.name(name, namespace)}ToXmlChildren(this, namespaces: namespaces);',
+    );
+
+    buffer.writeln(
+      'XmlElement toXmlElement({Map<String, String?> namespaces = const {}}) => _\$${classNamer.name(name, namespace)}ToXmlElement(this, namespaces: namespaces);',
+    );
+
+    buffer.writeln(
+      '}',
+    );
+
+    print(buffer.toString());
+  }
 }
 
 class DartClass {

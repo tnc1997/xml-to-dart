@@ -76,7 +76,7 @@ Future<void> main(
                 DartField(
                   name: const CamelCaseNamer().name(
                     attribute.localName,
-                    attribute.namespacePrefix,
+                    attribute.namespaceUri,
                   ),
                   namespace: attribute.namespaceUri,
                   type: const Typer().type(
@@ -90,7 +90,7 @@ Future<void> main(
               DartClass(
                 name: const PascalCaseNamer().name(
                   event.localName,
-                  event.namespacePrefix,
+                  event.namespaceUri,
                 ),
                 namespace: event.namespaceUri,
                 fields: fields,
@@ -169,8 +169,8 @@ abstract class Namer {
   const Namer();
 
   String name(
-    String local, [
-    String? prefix,
+    String name, [
+    String? namespace,
   ]);
 }
 
@@ -179,14 +179,10 @@ class CamelCaseNamer implements Namer {
 
   @override
   String name(
-    String local, [
-    String? prefix,
+    String name, [
+    String? namespace,
   ]) {
-    if (prefix != null) {
-      return '${prefix.camelCase}${local.pascalCase}';
-    }
-
-    return local.camelCase;
+    return name.camelCase;
   }
 }
 
@@ -195,14 +191,10 @@ class PascalCaseNamer implements Namer {
 
   @override
   String name(
-    String local, [
-    String? prefix,
+    String name, [
+    String? namespace,
   ]) {
-    if (prefix != null) {
-      return '${prefix.pascalCase}${local.pascalCase}';
-    }
-
-    return local.pascalCase;
+    return name.pascalCase;
   }
 }
 
@@ -211,14 +203,10 @@ class SnakeCaseNamer implements Namer {
 
   @override
   String name(
-    String local, [
-    String? prefix,
+    String name, [
+    String? namespace,
   ]) {
-    if (prefix != null) {
-      return '${prefix.snakeCase}_${local.snakeCase}';
-    }
-
-    return local.snakeCase;
+    return name.snakeCase;
   }
 }
 

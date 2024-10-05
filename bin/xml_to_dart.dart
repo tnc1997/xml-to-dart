@@ -30,6 +30,24 @@ String dartFieldNamer(DartField dartField) {
   }
 }
 
+typedef DartTyper = DartType Function(String value);
+
+DartType dartTyper(String value) {
+  if (int.tryParse(value) != null) {
+    return const IntDartType();
+  } else if (double.tryParse(value) != null) {
+    return const DoubleDartType();
+  } else if (DateTime.tryParse(value) != null) {
+    return const DateTimeDartType();
+  } else if (Uri.tryParse(value) != null) {
+    return const UriDartType();
+  } else if (value == 'true' || value == 'false') {
+    return const BoolDartType();
+  } else {
+    return const StringDartType();
+  }
+}
+
 final parser = ArgParser()
   ..addFlag(
     'help',
@@ -98,10 +116,7 @@ Future<void> main(
                 XmlAttributeDartField(
                   name: attribute.localName,
                   namespace: attribute.namespaceUri,
-                  dartType: DartType(
-                    name: const Typer().type(attribute.value),
-                    nullabilitySuffix: NullabilitySuffix.none,
-                  ),
+                  dartType: dartTyper(attribute.value),
                 ),
               );
             }
@@ -400,9 +415,9 @@ class DartType {
   final String name;
   final NullabilitySuffix nullabilitySuffix;
 
-  DartType({
+  const DartType({
     required this.name,
-    required this.nullabilitySuffix,
+    this.nullabilitySuffix = NullabilitySuffix.none,
   });
 
   @override
@@ -433,6 +448,60 @@ class DartType {
   }
 }
 
+class BoolDartType extends DartType {
+  const BoolDartType({
+    NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
+  }) : super(
+          name: 'bool',
+          nullabilitySuffix: nullabilitySuffix,
+        );
+}
+
+class DateTimeDartType extends DartType {
+  const DateTimeDartType({
+    NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
+  }) : super(
+          name: 'DateTime',
+          nullabilitySuffix: nullabilitySuffix,
+        );
+}
+
+class DoubleDartType extends DartType {
+  const DoubleDartType({
+    NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
+  }) : super(
+          name: 'double',
+          nullabilitySuffix: nullabilitySuffix,
+        );
+}
+
+class IntDartType extends DartType {
+  const IntDartType({
+    NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
+  }) : super(
+          name: 'int',
+          nullabilitySuffix: nullabilitySuffix,
+        );
+}
+
+class StringDartType extends DartType {
+  const StringDartType({
+    NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
+  }) : super(
+          name: 'String',
+          nullabilitySuffix: nullabilitySuffix,
+        );
+}
+
+class UriDartType extends DartType {
+  const UriDartType({
+    NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
+  }) : super(
+    name: 'Uri',
+    nullabilitySuffix: nullabilitySuffix,
+  );
+}
+
 /// Suffix indicating the nullability of a type.
 ///
 /// This enum describes whether a `?` would be used at the end of the canonical representation of a type. It's subtly different the notions of "nullable" and "non-nullable" defined by the spec. For example, the type `Null` is nullable, even though it lacks a trailing `?`.
@@ -442,34 +511,4 @@ enum NullabilitySuffix {
 
   /// An indication that the canonical representation of the type under consideration does not end with `?`.
   none,
-}
-
-class Typer {
-  const Typer();
-
-  String type(
-    String value,
-  ) {
-    if (int.tryParse(value) != null) {
-      return 'int';
-    }
-
-    if (double.tryParse(value) != null) {
-      return 'double';
-    }
-
-    if (DateTime.tryParse(value) != null) {
-      return 'DateTime';
-    }
-
-    if (Uri.tryParse(value) != null) {
-      return 'Uri';
-    }
-
-    if (value == 'true' || value == 'false') {
-      return 'bool';
-    }
-
-    return 'String';
-  }
 }

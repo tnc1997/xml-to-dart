@@ -39,8 +39,6 @@ DartType dartTyper(String value) {
     return const DoubleDartType();
   } else if (DateTime.tryParse(value) != null) {
     return const DateTimeDartType();
-  } else if (Uri.tryParse(value) != null) {
-    return const UriDartType();
   } else if (value == 'true' || value == 'false') {
     return const BoolDartType();
   } else {
@@ -491,15 +489,6 @@ class StringDartType extends DartType {
           name: 'String',
           nullabilitySuffix: nullabilitySuffix,
         );
-}
-
-class UriDartType extends DartType {
-  const UriDartType({
-    NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
-  }) : super(
-    name: 'Uri',
-    nullabilitySuffix: nullabilitySuffix,
-  );
 }
 
 /// Suffix indicating the nullability of a type.

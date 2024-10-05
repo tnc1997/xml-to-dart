@@ -77,7 +77,7 @@ Future<void> main(
 
             for (final attribute in event.attributes) {
               fields.add(
-                DartField(
+                XmlAttributeDartField(
                   name: attribute.localName,
                   namespace: attribute.namespaceUri,
                   type: DartType(
@@ -102,7 +102,7 @@ Future<void> main(
                 if (class_.name == parent.name &&
                     class_.namespace == parent.namespaceUri) {
                   class_.fields.add(
-                    DartField(
+                    XmlElementDartField(
                       name: event.localName,
                       namespace: event.namespaceUri,
                       type: DartType(
@@ -166,27 +166,51 @@ Future<void> main(
 
     if (fields.isNotEmpty) {
       for (final field in fields) {
-        final name = field.name;
-        final namespace = field.namespace;
         final type = field.type;
 
-        buffer.write(
-          '@annotation.XmlAttribute(name: \'$name\'',
-        );
+        if (field is XmlAttributeDartField) {
+          final name = field.name;
+          final namespace = field.namespace;
 
-        if (namespace != null) {
           buffer.write(
-            ', namespace: \'$namespace\'',
+            '@annotation.XmlAttribute(name: \'$name\'',
+          );
+
+          if (namespace != null) {
+            buffer.write(
+              ', namespace: \'$namespace\'',
+            );
+          }
+
+          buffer.writeln(
+            ')',
+          );
+
+          buffer.writeln(
+            '$type ${fieldNamer.name(name, namespace)};',
+          );
+        } else if (field is XmlElementDartField) {
+          final name = field.name;
+          final namespace = field.namespace;
+
+          buffer.write(
+            '@annotation.XmlElement(name: \'$name\'',
+          );
+
+          if (namespace != null) {
+            buffer.write(
+              ', namespace: \'$namespace\'',
+            );
+          }
+
+          buffer.writeln(
+            ')',
+          );
+
+          buffer.writeln(
+            '$type ${fieldNamer.name(name, namespace)};',
           );
         }
-
-        buffer.writeln(
-          ')',
-        );
-
-        buffer.writeln(
-          '$type ${fieldNamer.name(name, namespace)};',
-        );
       }
 
       buffer.writeln(
@@ -194,12 +218,21 @@ Future<void> main(
       );
 
       for (final field in fields) {
-        final name = field.name;
-        final namespace = field.namespace;
+        if (field is XmlAttributeDartField) {
+          final name = field.name;
+          final namespace = field.namespace;
 
-        buffer.writeln(
-          'this.${fieldNamer.name(name, namespace)}',
-        );
+          buffer.writeln(
+            'this.${fieldNamer.name(name, namespace)},',
+          );
+        } else if (field is XmlElementDartField) {
+          final name = field.name;
+          final namespace = field.namespace;
+
+          buffer.writeln(
+            'this.${fieldNamer.name(name, namespace)},',
+          );
+        }
       }
 
       buffer.writeln(
@@ -270,16 +303,25 @@ class DartClass {
   }
 }
 
-class DartField {
-  final String name;
-  final String? namespace;
+abstract class DartField {
   final DartType type;
 
   const DartField({
-    required this.name,
-    this.namespace,
     required this.type,
   });
+}
+
+class XmlAttributeDartField extends DartField {
+  final String name;
+  final String? namespace;
+
+  const XmlAttributeDartField({
+    required this.name,
+    this.namespace,
+    required DartType type,
+  }) : super(
+          type: type,
+        );
 
   @override
   int get hashCode {
@@ -289,26 +331,64 @@ class DartField {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        other is DartField &&
+        other is XmlAttributeDartField &&
             runtimeType == other.runtimeType &&
             name == other.name &&
             namespace == other.namespace;
-  }
-
-  DartField copyWith({
-    DartType? type,
-  }) {
-    return DartField(
-      name: name,
-      namespace: namespace,
-      type: type ?? this.type,
-    );
   }
 
   @override
   String toString() {
     return name;
   }
+}
+
+class XmlCDATADartField extends DartField {
+  const XmlCDATADartField({
+    required DartType type,
+  }) : super(
+          type: type,
+        );
+}
+
+class XmlElementDartField extends DartField {
+  final String name;
+  final String? namespace;
+
+  const XmlElementDartField({
+    required this.name,
+    this.namespace,
+    required DartType type,
+  }) : super(
+          type: type,
+        );
+
+  @override
+  int get hashCode {
+    return name.hashCode ^ namespace.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is XmlElementDartField &&
+            runtimeType == other.runtimeType &&
+            name == other.name &&
+            namespace == other.namespace;
+  }
+
+  @override
+  String toString() {
+    return name;
+  }
+}
+
+class XmlTextDartField extends DartField {
+  const XmlTextDartField({
+    required DartType type,
+  }) : super(
+          type: type,
+        );
 }
 
 class DartType {

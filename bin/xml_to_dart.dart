@@ -158,10 +158,17 @@ Future<void> main(
   }
 
   for (final dartClass in dartClasses) {
-    final buffer = StringBuffer();
+    final file = File(
+      join(
+        output ?? Directory.current.path,
+        '${dartClass.name.snakeCase}.dart',
+      ),
+    );
+
+    final sink = file.openWrite();
 
     final writer = XmlToDartStringWriter(
-      buffer,
+      sink,
       dartClassNamer: dartClassNamer,
       dartFieldNamer: dartFieldNamer,
     );
@@ -173,7 +180,7 @@ Future<void> main(
 
     writer.writeDartClass(dartClass);
 
-    print(buffer.toString());
+    await sink.close();
   }
 }
 
@@ -653,9 +660,9 @@ class XmlToDartStringWriter {
   }
 
   void writeXmlRootElementAnnotation(
-      DartClass dartClass, {
-        String? prefix = 'annotation',
-      }) {
+    DartClass dartClass, {
+    String? prefix = 'annotation',
+  }) {
     final name = dartClass.name;
     final namespace = dartClass.namespace;
 

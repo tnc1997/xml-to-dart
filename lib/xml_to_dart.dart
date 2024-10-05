@@ -1,21 +1,7 @@
-import 'dart:async';
-
-import 'package:build/build.dart';
-
-class XmlToDartBuilder implements Builder {
-  @override
-  final buildExtensions = const {
-    '.xml': [
-      '.dart',
-    ],
-  };
-
-  const XmlToDartBuilder();
-
-  @override
-  Future<void> build(
-    BuildStep buildStep,
-  ) {
-    throw UnimplementedError();
-  }
-}
+export 'src/dart_class.dart';
+export 'src/dart_class_namer.dart';
+export 'src/dart_field.dart';
+export 'src/dart_field_namer.dart';
+export 'src/dart_type.dart';
+export 'src/dart_typer.dart';
+export 'src/string_writer.dart';

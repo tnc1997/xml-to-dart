@@ -8,9 +8,27 @@ import 'package:path/path.dart';
 import 'package:recase/recase.dart';
 import 'package:xml/xml_events.dart';
 
-const classNamer = PascalCaseNamer();
-const fieldNamer = CamelCaseNamer();
-const fileNamer = SnakeCaseNamer();
+typedef DartClassNamer = String Function(DartClass dartClass);
+
+String dartClassNamer(DartClass dartClass) {
+  return dartClass.name.pascalCase;
+}
+
+typedef DartFieldNamer = String Function(DartField dartField);
+
+String dartFieldNamer(DartField dartField) {
+  if (dartField is XmlAttributeDartField) {
+    return dartField.name.camelCase;
+  } else if (dartField is XmlCDATADartField) {
+    return 'cdata';
+  } else if (dartField is XmlElementDartField) {
+    return dartField.name.camelCase;
+  } else if (dartField is XmlTextDartField) {
+    return 'text';
+  } else {
+    throw ArgumentError.value(dartField, 'dartField');
+  }
+}
 
 final parser = ArgParser()
   ..addFlag(
@@ -65,7 +83,7 @@ Future<void> main(
 
   final output = results.option('output');
 
-  final classes = <DartClass>{};
+  final dartClasses = <DartClass>{};
 
   await for (final entity in input.list()) {
     if (entity is File && extension(entity.path) == '.xml') {
@@ -73,14 +91,14 @@ Future<void> main(
       await for (final events in file.openRead().transform(transformer)) {
         for (final event in events) {
           if (event is XmlStartElementEvent) {
-            final fields = <DartField>{};
+            final dartFields = <DartField>{};
 
             for (final attribute in event.attributes) {
-              fields.add(
+              dartFields.add(
                 XmlAttributeDartField(
                   name: attribute.localName,
                   namespace: attribute.namespaceUri,
-                  type: DartType(
+                  dartType: DartType(
                     name: const Typer().type(attribute.value),
                     nullabilitySuffix: NullabilitySuffix.none,
                   ),
@@ -88,27 +106,30 @@ Future<void> main(
               );
             }
 
-            classes.add(
+            dartClasses.add(
               DartClass(
                 name: event.localName,
                 namespace: event.namespaceUri,
-                fields: fields,
+                dartFields: dartFields,
               ),
             );
 
             final parent = event.parent;
             if (parent != null) {
-              for (final class_ in classes) {
-                if (class_.name == parent.name &&
-                    class_.namespace == parent.namespaceUri) {
-                  class_.fields.add(
+              for (final dartClass in dartClasses) {
+                if (dartClass.name == parent.name &&
+                    dartClass.namespace == parent.namespaceUri) {
+                  dartClass.dartFields.add(
                     XmlElementDartField(
                       name: event.localName,
                       namespace: event.namespaceUri,
-                      type: DartType(
-                        name: classNamer.name(
-                          event.localName,
-                          event.namespaceUri,
+                      dartType: DartType(
+                        name: dartClassNamer(
+                          DartClass(
+                            name: event.localName,
+                            namespace: event.namespaceUri,
+                            dartFields: dartFields,
+                          ),
                         ),
                         nullabilitySuffix: NullabilitySuffix.none,
                       ),
@@ -123,10 +144,10 @@ Future<void> main(
     }
   }
 
-  for (final class_ in classes) {
-    final name = class_.name;
-    final namespace = class_.namespace;
-    final fields = class_.fields;
+  for (final dartClass in dartClasses) {
+    final name = dartClass.name;
+    final namespace = dartClass.namespace;
+    final dartFields = dartClass.dartFields;
 
     final buffer = StringBuffer();
 
@@ -139,7 +160,7 @@ Future<void> main(
     );
 
     buffer.writeln(
-      'part \'${fileNamer.name(name, namespace)}.g.dart\';',
+      'part \'${name.snakeCase}.g.dart\';',
     );
 
     buffer.write(
@@ -161,16 +182,16 @@ Future<void> main(
     );
 
     buffer.writeln(
-      'class ${classNamer.name(name, namespace)} {',
+      'class ${dartClassNamer(dartClass)} {',
     );
 
-    if (fields.isNotEmpty) {
-      for (final field in fields) {
-        final type = field.type;
+    if (dartFields.isNotEmpty) {
+      for (final dartField in dartFields) {
+        final dartType = dartField.dartType;
 
-        if (field is XmlAttributeDartField) {
-          final name = field.name;
-          final namespace = field.namespace;
+        if (dartField is XmlAttributeDartField) {
+          final name = dartField.name;
+          final namespace = dartField.namespace;
 
           buffer.write(
             '@annotation.XmlAttribute(name: \'$name\'',
@@ -185,13 +206,9 @@ Future<void> main(
           buffer.writeln(
             ')',
           );
-
-          buffer.writeln(
-            '$type ${fieldNamer.name(name, namespace)};',
-          );
-        } else if (field is XmlElementDartField) {
-          final name = field.name;
-          final namespace = field.namespace;
+        } else if (dartField is XmlElementDartField) {
+          final name = dartField.name;
+          final namespace = dartField.namespace;
 
           buffer.write(
             '@annotation.XmlElement(name: \'$name\'',
@@ -206,33 +223,21 @@ Future<void> main(
           buffer.writeln(
             ')',
           );
-
-          buffer.writeln(
-            '$type ${fieldNamer.name(name, namespace)};',
-          );
         }
+
+        buffer.writeln(
+          '$dartType ${dartFieldNamer(dartField)};',
+        );
       }
 
       buffer.writeln(
-        '${classNamer.name(name, namespace)}({',
+        '${dartClassNamer(dartClass)}({',
       );
 
-      for (final field in fields) {
-        if (field is XmlAttributeDartField) {
-          final name = field.name;
-          final namespace = field.namespace;
-
-          buffer.writeln(
-            'this.${fieldNamer.name(name, namespace)},',
-          );
-        } else if (field is XmlElementDartField) {
-          final name = field.name;
-          final namespace = field.namespace;
-
-          buffer.writeln(
-            'this.${fieldNamer.name(name, namespace)},',
-          );
-        }
+      for (final dartField in dartFields) {
+        buffer.writeln(
+          'this.${dartFieldNamer(dartField)},',
+        );
       }
 
       buffer.writeln(
@@ -241,27 +246,27 @@ Future<void> main(
     }
 
     buffer.writeln(
-      'factory ${classNamer.name(name, namespace)}.fromXmlElement(XmlElement element) => _\$${classNamer.name(name, namespace)}FromXmlElement(element);',
+      'factory ${dartClassNamer(dartClass)}.fromXmlElement(XmlElement element) => _\$${dartClassNamer(dartClass)}FromXmlElement(element);',
     );
 
     buffer.writeln(
-      'void buildXmlChildren(XmlBuilder builder, {Map<String, String> namespaces = const {}}) => _\$${classNamer.name(name, namespace)}BuildXmlChildren(this, builder, namespaces: namespaces);',
+      'void buildXmlChildren(XmlBuilder builder, {Map<String, String> namespaces = const {}}) => _\$${dartClassNamer(dartClass)}BuildXmlChildren(this, builder, namespaces: namespaces);',
     );
 
     buffer.writeln(
-      'void buildXmlElement(XmlBuilder builder, {Map<String, String> namespaces = const {}}) => _\$${classNamer.name(name, namespace)}BuildXmlElement(this, builder, namespaces: namespaces);',
+      'void buildXmlElement(XmlBuilder builder, {Map<String, String> namespaces = const {}}) => _\$${dartClassNamer(dartClass)}BuildXmlElement(this, builder, namespaces: namespaces);',
     );
 
     buffer.writeln(
-      'List<XmlAttribute> toXmlAttributes({Map<String, String?> namespaces = const {}}) => _\$${classNamer.name(name, namespace)}ToXmlAttributes(this, namespaces: namespaces);',
+      'List<XmlAttribute> toXmlAttributes({Map<String, String?> namespaces = const {}}) => _\$${dartClassNamer(dartClass)}ToXmlAttributes(this, namespaces: namespaces);',
     );
 
     buffer.writeln(
-      'List<XmlNode> toXmlChildren({Map<String, String?> namespaces = const {}}) => _\$${classNamer.name(name, namespace)}ToXmlChildren(this, namespaces: namespaces);',
+      'List<XmlNode> toXmlChildren({Map<String, String?> namespaces = const {}}) => _\$${dartClassNamer(dartClass)}ToXmlChildren(this, namespaces: namespaces);',
     );
 
     buffer.writeln(
-      'XmlElement toXmlElement({Map<String, String?> namespaces = const {}}) => _\$${classNamer.name(name, namespace)}ToXmlElement(this, namespaces: namespaces);',
+      'XmlElement toXmlElement({Map<String, String?> namespaces = const {}}) => _\$${dartClassNamer(dartClass)}ToXmlElement(this, namespaces: namespaces);',
     );
 
     buffer.writeln(
@@ -275,12 +280,12 @@ Future<void> main(
 class DartClass {
   final String name;
   final String? namespace;
-  final Set<DartField> fields;
+  final Set<DartField> dartFields;
 
   const DartClass({
     required this.name,
     this.namespace,
-    required this.fields,
+    required this.dartFields,
   });
 
   @override
@@ -304,10 +309,10 @@ class DartClass {
 }
 
 abstract class DartField {
-  final DartType type;
+  final DartType dartType;
 
   const DartField({
-    required this.type,
+    required this.dartType,
   });
 }
 
@@ -318,9 +323,9 @@ class XmlAttributeDartField extends DartField {
   const XmlAttributeDartField({
     required this.name,
     this.namespace,
-    required DartType type,
+    required DartType dartType,
   }) : super(
-          type: type,
+          dartType: dartType,
         );
 
   @override
@@ -345,9 +350,9 @@ class XmlAttributeDartField extends DartField {
 
 class XmlCDATADartField extends DartField {
   const XmlCDATADartField({
-    required DartType type,
+    required DartType dartType,
   }) : super(
-          type: type,
+          dartType: dartType,
         );
 }
 
@@ -358,9 +363,9 @@ class XmlElementDartField extends DartField {
   const XmlElementDartField({
     required this.name,
     this.namespace,
-    required DartType type,
+    required DartType dartType,
   }) : super(
-          type: type,
+          dartType: dartType,
         );
 
   @override
@@ -385,9 +390,9 @@ class XmlElementDartField extends DartField {
 
 class XmlTextDartField extends DartField {
   const XmlTextDartField({
-    required DartType type,
+    required DartType dartType,
   }) : super(
-          type: type,
+          dartType: dartType,
         );
 }
 
@@ -437,51 +442,6 @@ enum NullabilitySuffix {
 
   /// An indication that the canonical representation of the type under consideration does not end with `?`.
   none,
-}
-
-abstract class Namer {
-  const Namer();
-
-  String name(
-    String name, [
-    String? namespace,
-  ]);
-}
-
-class CamelCaseNamer implements Namer {
-  const CamelCaseNamer();
-
-  @override
-  String name(
-    String name, [
-    String? namespace,
-  ]) {
-    return name.camelCase;
-  }
-}
-
-class PascalCaseNamer implements Namer {
-  const PascalCaseNamer();
-
-  @override
-  String name(
-    String name, [
-    String? namespace,
-  ]) {
-    return name.pascalCase;
-  }
-}
-
-class SnakeCaseNamer implements Namer {
-  const SnakeCaseNamer();
-
-  @override
-  String name(
-    String name, [
-    String? namespace,
-  ]) {
-    return name.snakeCase;
-  }
 }
 
 class Typer {

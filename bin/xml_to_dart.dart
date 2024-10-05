@@ -95,6 +95,28 @@ Future<void> main(
                 fields: fields,
               ),
             );
+
+            final parent = event.parent;
+            if (parent != null) {
+              for (final class_ in classes) {
+                if (class_.name == parent.name &&
+                    class_.namespace == parent.namespaceUri) {
+                  class_.fields.add(
+                    DartField(
+                      name: event.localName,
+                      namespace: event.namespaceUri,
+                      type: DartType(
+                        name: classNamer.name(
+                          event.localName,
+                          event.namespaceUri,
+                        ),
+                        nullabilitySuffix: NullabilitySuffix.none,
+                      ),
+                    ),
+                  );
+                }
+              }
+            }
           }
         }
       }

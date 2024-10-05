@@ -151,6 +151,20 @@ Future<void> main(
                 }
               }
             }
+          } else if (event is XmlCDATAEvent) {
+            final parent = event.parent;
+            if (parent != null && event.value.isNotEmpty) {
+              for (final dartClass in dartClasses) {
+                if (dartClass.name == parent.name &&
+                    dartClass.namespace == parent.namespaceUri) {
+                  dartClass.dartFields.add(
+                    XmlCDATADartField(
+                      dartType: dartTyper(event.value),
+                    ),
+                  );
+                }
+              }
+            }
           }
         }
       }

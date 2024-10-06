@@ -5,6 +5,7 @@ import 'package:args/args.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:path/path.dart';
+import 'package:recase/recase.dart';
 import 'package:xml/xml_events.dart';
 import 'package:xml_to_dart/xml_to_dart.dart';
 
@@ -68,7 +69,7 @@ Future<void> main(
     final file = File(
       join(
         results.option('output') ?? Directory.current.path,
-        '${snakeCaseNamer(class_.name)}.dart',
+        '${class_.name.snakeCase}.dart',
       ),
     );
 

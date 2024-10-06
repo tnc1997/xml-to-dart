@@ -1,8 +1,9 @@
+import 'package:recase/recase.dart';
+
 import 'dart_annotation.dart';
 import 'dart_class.dart';
 import 'dart_field.dart';
 import 'dart_type.dart';
-import 'namer.dart';
 
 class XmlToDartStringWriter {
   final StringSink _sink;
@@ -144,7 +145,7 @@ class XmlToDartStringWriter {
     DartClass class_,
   ) {
     _sink.writeln(
-      'part \'${snakeCaseNamer(class_.name)}.g.dart\';',
+      'part \'${class_.name.snakeCase}.g.dart\';',
     );
   }
 

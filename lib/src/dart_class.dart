@@ -1,8 +1,8 @@
+import 'package:recase/recase.dart';
 import 'package:xml/xml_events.dart';
 
 import 'dart_annotation.dart';
 import 'dart_field.dart';
-import 'namer.dart';
 
 class DartClass {
   final String name;
@@ -19,10 +19,7 @@ class DartClass {
     XmlStartElementEvent event,
   ) {
     return DartClass(
-      name: pascalCaseNamer(
-        event.localName,
-        event.namespaceUri,
-      ),
+      name: event.localName.pascalCase,
       annotations: [
         XmlRootElementDartAnnotation.fromXmlStartElementEvent(
           event,
@@ -31,10 +28,7 @@ class DartClass {
       ],
       fields: {
         for (final attribute in event.attributes)
-          camelCaseNamer(
-            attribute.localName,
-            attribute.namespaceUri,
-          ): DartField.fromXmlEventAttribute(
+          attribute.localName.camelCase: DartField.fromXmlEventAttribute(
             attribute,
           ),
       },

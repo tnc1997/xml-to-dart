@@ -1,8 +1,8 @@
+import 'package:recase/recase.dart';
 import 'package:xml/xml_events.dart';
 
 import 'dart_annotation.dart';
 import 'dart_type.dart';
-import 'namer.dart';
 
 class DartField {
   final String name;
@@ -15,14 +15,25 @@ class DartField {
     required this.type,
   });
 
+  factory DartField.fromXmlCDATAEvent(
+    XmlCDATAEvent event,
+  ) {
+    return DartField(
+      name: 'cdata',
+      annotations: [
+        const XmlCDATADartAnnotation(),
+      ],
+      type: DartType.fromValue(
+        event.value,
+      ),
+    );
+  }
+
   factory DartField.fromXmlEventAttribute(
     XmlEventAttribute attribute,
   ) {
     return DartField(
-      name: camelCaseNamer(
-        attribute.localName,
-        attribute.namespaceUri,
-      ),
+      name: attribute.localName.camelCase,
       annotations: [
         XmlAttributeDartAnnotation.fromXmlEventAttribute(
           attribute,
@@ -30,6 +41,37 @@ class DartField {
       ],
       type: DartType.fromValue(
         attribute.value,
+      ),
+    );
+  }
+
+  factory DartField.fromXmlStartElementEvent(
+    XmlStartElementEvent event,
+  ) {
+    return DartField(
+      name: event.localName.camelCase,
+      annotations: [
+        XmlElementDartAnnotation.fromXmlStartElementEvent(
+          event,
+        ),
+      ],
+      type: DartType(
+        name: event.localName.pascalCase,
+        nullabilitySuffix: NullabilitySuffix.none,
+      ),
+    );
+  }
+
+  factory DartField.fromXmlTextEvent(
+    XmlTextEvent event,
+  ) {
+    return DartField(
+      name: 'text',
+      annotations: [
+        const XmlTextDartAnnotation(),
+      ],
+      type: DartType.fromValue(
+        event.value,
       ),
     );
   }

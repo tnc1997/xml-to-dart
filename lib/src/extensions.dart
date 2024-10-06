@@ -1,12 +1,12 @@
 import 'dart:async';
 
+import 'package:recase/recase.dart';
 import 'package:xml/xml_events.dart';
 
 import 'dart_annotation.dart';
 import 'dart_class.dart';
 import 'dart_field.dart';
 import 'dart_type.dart';
-import 'namer.dart';
 
 extension ToDartClassListExtension on Stream<List<XmlEvent>> {
   Future<List<DartClass>> toDartClassList() async {
@@ -22,11 +22,8 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
 
             for (final attribute in event.attributes) {
               fields.update(
-                camelCaseNamer(
-                  attribute.localName,
-                  attribute.namespaceUri,
-                ),
-                    (value) {
+                attribute.localName.camelCase,
+                (value) {
                   return value.copyWith(
                     type: value.type.mergeWith(
                       DartType.fromValue(
@@ -37,10 +34,7 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
                 },
                 ifAbsent: () {
                   return DartField(
-                    name: camelCaseNamer(
-                      attribute.localName,
-                      attribute.namespaceUri,
-                    ),
+                    name: attribute.localName.camelCase,
                     annotations: [
                       XmlAttributeDartAnnotation.fromXmlEventAttribute(
                         attribute,
@@ -55,16 +49,10 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
             }
 
             classes.update(
-              pascalCaseNamer(
-                event.localName,
-                event.namespaceUri,
-              ),
-                  (value) {
+              event.localName.pascalCase,
+              (value) {
                 return DartClass(
-                  name: pascalCaseNamer(
-                    event.localName,
-                    event.namespaceUri,
-                  ),
+                  name: event.localName.pascalCase,
                   annotations: [
                     XmlRootElementDartAnnotation.fromXmlStartElementEvent(
                       event,
@@ -76,10 +64,7 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
               },
               ifAbsent: () {
                 return DartClass(
-                  name: pascalCaseNamer(
-                    event.localName,
-                    event.namespaceUri,
-                  ),
+                  name: event.localName.pascalCase,
                   annotations: [
                     XmlRootElementDartAnnotation.fromXmlStartElementEvent(
                       event,

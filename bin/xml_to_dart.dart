@@ -28,16 +28,6 @@ final parser = ArgParser()
     mandatory: false,
   );
 
-final transformer = const Utf8Decoder()
-    .fuse(
-      XmlEventDecoder(
-        withParent: true,
-      ),
-    )
-    .fuse(
-      const XmlToDartConverter(),
-    );
-
 Future<void> main(
   List<String> arguments,
 ) async {
@@ -63,33 +53,21 @@ Future<void> main(
     return;
   }
 
-  final output = results.option('output');
+  final classes = await input
+      .list()
+      .where((entity) => entity is File)
+      .cast<File>()
+      .where((file) => extension(file.path) == '.xml')
+      .asyncExpand((file) => file.openRead())
+      .transform(const Utf8Decoder())
+      .transform(XmlEventDecoder())
+      .transform(XmlWithParentEvents())
+      .toDartClassList();
 
-  final classes = <String, DartClass>{};
-
-  await for (final entity in input.list()) {
-    if (entity is File && extension(entity.path) == '.xml') {
-      final file = File(entity.path);
-      await for (final events in file.openRead().transform(transformer)) {
-        for (final event in events) {
-          classes.update(
-            event.name,
-            (value) {
-              return event;
-            },
-            ifAbsent: () {
-              return event;
-            },
-          );
-        }
-      }
-    }
-  }
-
-  for (final class_ in classes.values) {
+  for (final class_ in classes) {
     final file = File(
       join(
-        output ?? Directory.current.path,
+        results.option('output') ?? Directory.current.path,
         '${snakeCaseNamer(class_.name)}.dart',
       ),
     );

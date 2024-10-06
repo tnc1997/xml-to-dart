@@ -173,7 +173,7 @@ class XmlToDartStringWriter {
   }
 
   void writeXmlAnnotationImportDirective() {
-    _sink.write(
+    _sink.writeln(
       'import \'package:xml_annotation/xml_annotation.dart\' as annotation;',
     );
   }

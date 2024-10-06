@@ -45,6 +45,42 @@ class DartClass {
     return identical(this, other) || other is DartClass && name == other.name;
   }
 
+  DartClass copyWith({
+    String? name,
+    List<DartAnnotation>? annotations,
+    Map<String, DartField>? fields,
+  }) {
+    return DartClass(
+      name: name ?? this.name,
+      annotations: annotations ?? this.annotations,
+      fields: fields ?? this.fields,
+    );
+  }
+
+  DartClass mergeWith(
+    DartClass other,
+  ) {
+    final fields = this.fields;
+
+    for (final other in other.fields.values) {
+      fields.update(
+        other.name,
+        (field) {
+          return field.mergeWith(other);
+        },
+        ifAbsent: () {
+          return other;
+        },
+      );
+    }
+
+    return DartClass(
+      name: name,
+      annotations: annotations,
+      fields: fields,
+    );
+  }
+
   @override
   String toString() {
     return name;

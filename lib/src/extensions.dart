@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:recase/recase.dart';
 import 'package:xml/xml_events.dart';
 
-import 'dart_annotation.dart';
 import 'dart_class.dart';
 import 'dart_field.dart';
 
@@ -39,28 +38,16 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
 
             classes.update(
               event.localName.pascalCase,
-              (value) {
-                return DartClass(
-                  name: event.localName.pascalCase,
-                  annotations: [
-                    XmlRootElementDartAnnotation.fromXmlStartElementEvent(
-                      event,
-                    ),
-                    const XmlSerializableDartAnnotation(),
-                  ],
-                  fields: fields,
+              (class_) {
+                return class_.mergeWith(
+                  DartClass.fromXmlStartElementEvent(
+                    event,
+                  ),
                 );
               },
               ifAbsent: () {
-                return DartClass(
-                  name: event.localName.pascalCase,
-                  annotations: [
-                    XmlRootElementDartAnnotation.fromXmlStartElementEvent(
-                      event,
-                    ),
-                    const XmlSerializableDartAnnotation(),
-                  ],
-                  fields: fields,
+                return DartClass.fromXmlStartElementEvent(
+                  event,
                 );
               },
             );

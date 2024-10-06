@@ -78,18 +78,11 @@ Future<void> main(
                   attribute.namespaceUri,
                 ),
                 (value) {
-                  return DartField(
-                    name: camelCaseNamer(
-                      attribute.localName,
-                      attribute.namespaceUri,
-                    ),
-                    annotations: [
-                      XmlAttributeDartAnnotation.fromXmlEventAttribute(
-                        attribute,
+                  return value.copyWith(
+                    type: value.type.mergeWith(
+                      DartType.fromValue(
+                        attribute.value,
                       ),
-                    ],
-                    type: typer(
-                      attribute.value,
                     ),
                   );
                 },
@@ -104,7 +97,7 @@ Future<void> main(
                         attribute,
                       ),
                     ],
-                    type: typer(
+                    type: DartType.fromValue(
                       attribute.value,
                     ),
                   );
@@ -189,7 +182,7 @@ Future<void> main(
                 annotations: [
                   const XmlCDATADartAnnotation(),
                 ],
-                type: typer(
+                type: DartType.fromValue(
                   event.value,
                 ),
               );
@@ -206,7 +199,7 @@ Future<void> main(
                 annotations: [
                   const XmlTextDartAnnotation(),
                 ],
-                type: typer(
+                type: DartType.fromValue(
                   event.value,
                 ),
               );

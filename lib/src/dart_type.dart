@@ -7,6 +7,32 @@ class DartType {
     this.nullabilitySuffix = NullabilitySuffix.none,
   });
 
+  factory DartType.fromValue(
+    String value,
+  ) {
+    if (int.tryParse(value) != null) {
+      return const DartType(
+        name: 'int',
+      );
+    } else if (double.tryParse(value) != null) {
+      return const DartType(
+        name: 'double',
+      );
+    } else if (DateTime.tryParse(value) != null) {
+      return const DartType(
+        name: 'DateTime',
+      );
+    } else if (value == 'true' || value == 'false') {
+      return const DartType(
+        name: 'bool',
+      );
+    } else {
+      return const DartType(
+        name: 'String',
+      );
+    }
+  }
+
   @override
   int get hashCode {
     return name.hashCode;
@@ -14,24 +40,48 @@ class DartType {
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) ||
-        other is DartType &&
-            runtimeType == other.runtimeType &&
-            name == other.name;
+    return identical(this, other) || other is DartType && name == other.name;
   }
 
-  DartType copyWith({
-    NullabilitySuffix? nullabilitySuffix,
-  }) {
+  DartType mergeWith(
+    DartType other,
+  ) {
+    String name;
+    if (this.name == other.name) {
+      name = this.name;
+    } else if (this.name == 'int' && other.name == 'double') {
+      name = 'double';
+    } else if (this.name == 'double' && other.name == 'int') {
+      name = 'double';
+    } else {
+      name = 'String';
+    }
+
+    NullabilitySuffix nullabilitySuffix;
+    if (this.nullabilitySuffix == other.nullabilitySuffix) {
+      nullabilitySuffix = this.nullabilitySuffix;
+    } else if (this.nullabilitySuffix == NullabilitySuffix.question) {
+      nullabilitySuffix = NullabilitySuffix.question;
+    } else if (other.nullabilitySuffix == NullabilitySuffix.question) {
+      nullabilitySuffix = NullabilitySuffix.question;
+    } else {
+      nullabilitySuffix = NullabilitySuffix.none;
+    }
+
     return DartType(
       name: name,
-      nullabilitySuffix: nullabilitySuffix ?? this.nullabilitySuffix,
+      nullabilitySuffix: nullabilitySuffix,
     );
   }
 
   @override
   String toString() {
-    return name;
+    switch (nullabilitySuffix) {
+      case NullabilitySuffix.question:
+        return '$name?';
+      case NullabilitySuffix.none:
+        return name;
+    }
   }
 }
 

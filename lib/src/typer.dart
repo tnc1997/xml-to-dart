@@ -1,8 +1,12 @@
 import 'dart_type.dart';
 
-typedef DartTyper = DartType Function(String value,);
+typedef Typer = DartType Function(
+  String value,
+);
 
-DartType dartTyper(String value,) {
+DartType typer(
+  String value,
+) {
   if (int.tryParse(value) != null) {
     return const IntDartType();
   } else if (double.tryParse(value) != null) {

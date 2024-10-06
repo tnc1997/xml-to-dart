@@ -5,7 +5,6 @@ import 'package:args/args.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:path/path.dart';
-import 'package:recase/recase.dart';
 import 'package:xml/xml_events.dart';
 import 'package:xml_to_dart/xml_to_dart.dart';
 
@@ -62,7 +61,7 @@ Future<void> main(
 
   final output = results.option('output');
 
-  final dartClasses = <DartClass>{};
+  final classes = <String, DartClass>{};
 
   await for (final entity in input.list()) {
     if (entity is File && extension(entity.path) == '.xml') {
@@ -70,77 +69,147 @@ Future<void> main(
       await for (final events in file.openRead().transform(transformer)) {
         for (final event in events) {
           if (event is XmlStartElementEvent) {
-            final dartFields = <DartField>{};
+            final fields = <String, DartField>{};
 
             for (final attribute in event.attributes) {
-              dartFields.add(
-                XmlAttributeDartField(
-                  name: attribute.localName,
-                  namespace: attribute.namespaceUri,
-                  dartType: dartTyper(attribute.value),
+              fields.update(
+                camelCaseNamer(
+                  attribute.localName,
+                  attribute.namespaceUri,
                 ),
+                (value) {
+                  return DartField(
+                    name: camelCaseNamer(
+                      attribute.localName,
+                      attribute.namespaceUri,
+                    ),
+                    annotations: [
+                      XmlAttributeDartAnnotation.fromXmlEventAttribute(
+                        attribute,
+                      ),
+                    ],
+                    type: typer(
+                      attribute.value,
+                    ),
+                  );
+                },
+                ifAbsent: () {
+                  return DartField(
+                    name: camelCaseNamer(
+                      attribute.localName,
+                      attribute.namespaceUri,
+                    ),
+                    annotations: [
+                      XmlAttributeDartAnnotation.fromXmlEventAttribute(
+                        attribute,
+                      ),
+                    ],
+                    type: typer(
+                      attribute.value,
+                    ),
+                  );
+                },
               );
             }
 
-            dartClasses.add(
-              DartClass(
-                name: event.localName,
-                namespace: event.namespaceUri,
-                dartFields: dartFields,
+            classes.update(
+              pascalCaseNamer(
+                event.localName,
+                event.namespaceUri,
               ),
+              (value) {
+                return DartClass(
+                  name: pascalCaseNamer(
+                    event.localName,
+                    event.namespaceUri,
+                  ),
+                  annotations: [
+                    XmlRootElementDartAnnotation.fromXmlStartElementEvent(
+                      event,
+                    ),
+                    const XmlSerializableDartAnnotation(),
+                  ],
+                  fields: fields,
+                );
+              },
+              ifAbsent: () {
+                return DartClass(
+                  name: pascalCaseNamer(
+                    event.localName,
+                    event.namespaceUri,
+                  ),
+                  annotations: [
+                    XmlRootElementDartAnnotation.fromXmlStartElementEvent(
+                      event,
+                    ),
+                    const XmlSerializableDartAnnotation(),
+                  ],
+                  fields: fields,
+                );
+              },
             );
 
             final parent = event.parent;
             if (parent != null) {
-              for (final dartClass in dartClasses) {
-                if (dartClass.name == parent.name &&
-                    dartClass.namespace == parent.namespaceUri) {
-                  dartClass.dartFields.add(
-                    XmlElementDartField(
-                      name: event.localName,
-                      namespace: event.namespaceUri,
-                      dartType: DartType(
-                        name: dartClassNamer(
-                          DartClass(
-                            name: event.localName,
-                            namespace: event.namespaceUri,
-                            dartFields: dartFields,
-                          ),
-                        ),
-                        nullabilitySuffix: NullabilitySuffix.none,
-                      ),
-                    ),
-                  );
-                }
-              }
+              classes[pascalCaseNamer(
+                parent.name,
+                parent.namespaceUri,
+              )]
+                  ?.fields[camelCaseNamer(
+                event.localName,
+                event.namespaceUri,
+              )] = DartField(
+                name: camelCaseNamer(
+                  event.localName,
+                  event.namespaceUri,
+                ),
+                annotations: [
+                  XmlElementDartAnnotation.fromXmlStartElementEvent(
+                    event,
+                  ),
+                ],
+                type: DartType(
+                  name: pascalCaseNamer(
+                    event.localName,
+                    event.namespaceUri,
+                  ),
+                  nullabilitySuffix: NullabilitySuffix.none,
+                ),
+              );
             }
           } else if (event is XmlCDATAEvent) {
             final parent = event.parent;
             if (parent != null && event.value.isNotEmpty) {
-              for (final dartClass in dartClasses) {
-                if (dartClass.name == parent.name &&
-                    dartClass.namespace == parent.namespaceUri) {
-                  dartClass.dartFields.add(
-                    XmlCDATADartField(
-                      dartType: dartTyper(event.value),
-                    ),
-                  );
-                }
-              }
+              classes[pascalCaseNamer(
+                parent.name,
+                parent.namespaceUri,
+              )]
+                  ?.fields['cdata'] = DartField(
+                name: 'cdata',
+                annotations: [
+                  const XmlCDATADartAnnotation(),
+                ],
+                type: typer(
+                  event.value,
+                ),
+              );
             }
           } else if (event is XmlTextEvent) {
             final parent = event.parent;
             if (parent != null && event.value.isNotEmpty) {
-              for (final dartClass in dartClasses) {
-                if (dartClass.name == parent.name &&
-                    dartClass.namespace == parent.namespaceUri) {
-                  dartClass.dartFields.add(
-                    XmlTextDartField(
-                      dartType: dartTyper(event.value),
-                    ),
-                  );
-                }
-              }
+              classes[pascalCaseNamer(
+                parent.name,
+                parent.namespaceUri,
+              )]
+                  ?.fields['text'] = DartField(
+                name: 'text',
+                annotations: [
+                  const XmlTextDartAnnotation(),
+                ],
+                type: typer(
+                  event.value,
+                ),
+              );
             }
           }
         }
@@ -148,28 +217,24 @@ Future<void> main(
     }
   }
 
-  for (final dartClass in dartClasses) {
+  for (final class_ in classes.values) {
     final file = File(
       join(
         output ?? Directory.current.path,
-        '${dartClass.name.snakeCase}.dart',
+        '${snakeCaseNamer(class_.name)}.dart',
       ),
     );
 
     final sink = file.openWrite();
 
-    final writer = XmlToDartStringWriter(
-      sink,
-      dartClassNamer: dartClassNamer,
-      dartFieldNamer: dartFieldNamer,
-    );
+    final writer = XmlToDartStringWriter(sink);
 
     writer.writeXmlImportDirective();
     writer.writeXmlAnnotationImportDirective();
 
-    writer.writePartDirective(dartClass);
+    writer.writePartDirective(class_);
 
-    writer.writeDartClass(dartClass);
+    writer.writeDartClass(class_);
 
     await sink.close();
   }

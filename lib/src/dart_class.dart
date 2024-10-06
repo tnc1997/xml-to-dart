@@ -1,28 +1,25 @@
+import 'dart_annotation.dart';
 import 'dart_field.dart';
 
 class DartClass {
   final String name;
-  final String? namespace;
-  final Set<DartField> dartFields;
+  final List<DartAnnotation> annotations;
+  final Map<String, DartField> fields;
 
   const DartClass({
     required this.name,
-    this.namespace,
-    required this.dartFields,
+    required this.annotations,
+    required this.fields,
   });
 
   @override
   int get hashCode {
-    return name.hashCode ^ namespace.hashCode;
+    return name.hashCode;
   }
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) ||
-        other is DartClass &&
-            runtimeType == other.runtimeType &&
-            name == other.name &&
-            namespace == other.namespace;
+    return identical(this, other) || other is DartClass && name == other.name;
   }
 
   @override

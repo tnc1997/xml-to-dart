@@ -12,8 +12,8 @@ class XmlToDartBuilder implements Builder {
 
   @override
   Future<void> build(
-      BuildStep buildStep,
-      ) {
+    BuildStep buildStep,
+  ) {
     throw UnimplementedError();
   }
 }

@@ -1,63 +1,75 @@
-import 'package:recase/recase.dart';
-
+import 'dart_annotation.dart';
 import 'dart_class.dart';
-import 'dart_class_namer.dart';
 import 'dart_field.dart';
-import 'dart_field_namer.dart';
 import 'dart_type.dart';
+import 'namer.dart';
 
 class XmlToDartStringWriter {
   final StringSink _sink;
-  final DartClassNamer _dartClassNamer;
-  final DartFieldNamer _dartFieldNamer;
 
-  const XmlToDartStringWriter(
-      this._sink, {
-        DartClassNamer dartClassNamer = dartClassNamer,
-        DartFieldNamer dartFieldNamer = dartFieldNamer,
-      })  : _dartClassNamer = dartClassNamer,
-        _dartFieldNamer = dartFieldNamer;
+  const XmlToDartStringWriter(this._sink);
 
   void writeBuildXmlChildrenMethod(
-      DartClass dartClass,
-      ) {
+    DartClass class_,
+  ) {
     _sink.writeln(
-      'void buildXmlChildren(XmlBuilder builder, {Map<String, String> namespaces = const {}}) => _\$${_dartClassNamer(dartClass)}BuildXmlChildren(this, builder, namespaces: namespaces);',
+      'void buildXmlChildren(XmlBuilder builder, {Map<String, String> namespaces = const {}}) => _\$${class_.name}BuildXmlChildren(this, builder, namespaces: namespaces);',
     );
   }
 
   void writeBuildXmlElementMethod(
-      DartClass dartClass,
-      ) {
+    DartClass class_,
+  ) {
     _sink.writeln(
-      'void buildXmlElement(XmlBuilder builder, {Map<String, String> namespaces = const {}}) => _\$${_dartClassNamer(dartClass)}BuildXmlElement(this, builder, namespaces: namespaces);',
+      'void buildXmlElement(XmlBuilder builder, {Map<String, String> namespaces = const {}}) => _\$${class_.name}BuildXmlElement(this, builder, namespaces: namespaces);',
     );
   }
 
+  void writeDartAnnotation(
+    DartAnnotation annotation,
+  ) {
+    if (annotation is XmlAttributeDartAnnotation) {
+      writeXmlAttributeDartAnnotation(annotation);
+    } else if (annotation is XmlCDATADartAnnotation) {
+      writeXmlCDATADartAnnotation(annotation);
+    } else if (annotation is XmlElementDartAnnotation) {
+      writeXmlElementDartAnnotation(annotation);
+    } else if (annotation is XmlRootElementDartAnnotation) {
+      writeXmlRootElementDartAnnotation(annotation);
+    } else if (annotation is XmlSerializableDartAnnotation) {
+      writeXmlSerializableDartAnnotation(annotation);
+    } else if (annotation is XmlTextDartAnnotation) {
+      writeXmlTextDartAnnotation(annotation);
+    } else {
+      throw ArgumentError.value(annotation, 'annotation');
+    }
+  }
+
   void writeDartClass(
-      DartClass dartClass,
-      ) {
-    writeXmlRootElementAnnotation(dartClass);
-    writeXmlSerializableAnnotation(dartClass);
-
-    _sink.writeln(
-      'class ${_dartClassNamer(dartClass)} {',
-    );
-
-    for (final dartField in dartClass.dartFields) {
-      writeDartField(dartField);
+    DartClass class_,
+  ) {
+    for (final annotation in class_.annotations) {
+      writeDartAnnotation(annotation);
     }
 
-    writeGenerativeConstructor(dartClass);
+    _sink.writeln(
+      'class ${class_.name} {',
+    );
 
-    writeFromXmlElementFactoryConstructor(dartClass);
+    for (final field in class_.fields.values) {
+      writeDartField(field);
+    }
 
-    writeBuildXmlChildrenMethod(dartClass);
-    writeBuildXmlElementMethod(dartClass);
+    writeGenerativeConstructor(class_);
 
-    writeToXmlAttributesMethod(dartClass);
-    writeToXmlChildrenMethod(dartClass);
-    writeToXmlElementMethod(dartClass);
+    writeFromXmlElementFactoryConstructor(class_);
+
+    writeBuildXmlChildrenMethod(class_);
+    writeBuildXmlElementMethod(class_);
+
+    writeToXmlAttributesMethod(class_);
+    writeToXmlChildrenMethod(class_);
+    writeToXmlElementMethod(class_);
 
     _sink.writeln(
       '}',
@@ -65,64 +77,56 @@ class XmlToDartStringWriter {
   }
 
   void writeDartField(
-      DartField dartField,
-      ) {
-    if (dartField is XmlAttributeDartField) {
-      writeXmlAttributeAnnotation(dartField);
-    } else if (dartField is XmlCDATADartField) {
-      writeXmlCDATAAnnotation(dartField);
-    } else if (dartField is XmlElementDartField) {
-      writeXmlElementAnnotation(dartField);
-    } else if (dartField is XmlTextDartField) {
-      writeXmlTextAnnotation(dartField);
-    } else {
-      throw ArgumentError.value(dartField, 'dartField');
+    DartField field,
+  ) {
+    for (final annotation in field.annotations) {
+      writeDartAnnotation(annotation);
     }
 
     _sink.write(
-      dartField.dartType.name,
+      field.type.name,
     );
 
-    if (dartField.dartType.nullabilitySuffix == NullabilitySuffix.question) {
+    if (field.type.nullabilitySuffix == NullabilitySuffix.question) {
       _sink.write(
         '?',
       );
     }
 
     _sink.writeln(
-      ' ${_dartFieldNamer(dartField)};',
+      ' ${field.name};',
     );
   }
 
   void writeFromXmlElementFactoryConstructor(
-      DartClass dartClass,
-      ) {
+    DartClass class_,
+  ) {
     _sink.writeln(
-      'factory ${_dartClassNamer(dartClass)}.fromXmlElement(XmlElement element) => _\$${_dartClassNamer(dartClass)}FromXmlElement(element);',
+      'factory ${class_.name}.fromXmlElement(XmlElement element) => _\$${class_.name}FromXmlElement(element);',
     );
   }
 
   void writeGenerativeConstructor(
-      DartClass dartClass,
-      ) {
+    DartClass class_,
+  ) {
     _sink.write(
-      '${_dartClassNamer(dartClass)}(',
+      '${class_.name}(',
     );
 
-    if (dartClass.dartFields.isNotEmpty) {
+    if (class_.fields.isNotEmpty) {
       _sink.writeln(
         '{',
       );
 
-      for (final dartField in dartClass.dartFields) {
-        if (dartField.dartType.nullabilitySuffix == NullabilitySuffix.none) {
+      for (final field in class_.fields.values) {
+        if (field.type.nullabilitySuffix == NullabilitySuffix.none) {
           _sink.write(
             'required ',
           );
         }
 
         _sink.writeln(
-          'this.${_dartFieldNamer(dartField)},',
+          'this.${field.name},',
         );
       }
 
@@ -137,74 +141,51 @@ class XmlToDartStringWriter {
   }
 
   void writePartDirective(
-      DartClass dartClass,
-      ) {
+    DartClass class_,
+  ) {
     _sink.writeln(
-      'part \'${dartClass.name.snakeCase}.g.dart\';',
+      'part \'${snakeCaseNamer(class_.name)}.g.dart\';',
     );
   }
 
   void writeToXmlAttributesMethod(
-      DartClass dartClass,
-      ) {
+    DartClass class_,
+  ) {
     _sink.writeln(
-      'List<XmlAttribute> toXmlAttributes({Map<String, String?> namespaces = const {}}) => _\$${_dartClassNamer(dartClass)}ToXmlAttributes(this, namespaces: namespaces);',
+      'List<XmlAttribute> toXmlAttributes({Map<String, String?> namespaces = const {}}) => _\$${class_.name}ToXmlAttributes(this, namespaces: namespaces);',
     );
   }
 
   void writeToXmlChildrenMethod(
-      DartClass dartClass,
-      ) {
+    DartClass class_,
+  ) {
     _sink.writeln(
-      'List<XmlNode> toXmlChildren({Map<String, String?> namespaces = const {}}) => _\$${_dartClassNamer(dartClass)}ToXmlChildren(this, namespaces: namespaces);',
+      'List<XmlNode> toXmlChildren({Map<String, String?> namespaces = const {}}) => _\$${class_.name}ToXmlChildren(this, namespaces: namespaces);',
     );
   }
 
   void writeToXmlElementMethod(
-      DartClass dartClass,
-      ) {
+    DartClass class_,
+  ) {
     _sink.writeln(
-      'XmlElement toXmlElement({Map<String, String?> namespaces = const {}}) => _\$${_dartClassNamer(dartClass)}ToXmlElement(this, namespaces: namespaces);',
+      'XmlElement toXmlElement({Map<String, String?> namespaces = const {}}) => _\$${class_.name}ToXmlElement(this, namespaces: namespaces);',
     );
   }
 
-  void writeXmlAnnotationImportDirective({
-    String? prefix = 'annotation',
-  }) {
+  void writeXmlAnnotationImportDirective() {
     _sink.write(
-      'import \'package:xml_annotation/xml_annotation.dart\'',
-    );
-
-    if (prefix != null) {
-      _sink.write(
-        ' as $prefix',
-      );
-    }
-
-    _sink.writeln(
-      ';',
+      'import \'package:xml_annotation/xml_annotation.dart\' as annotation;',
     );
   }
 
-  void writeXmlAttributeAnnotation(
-      XmlAttributeDartField dartField, {
-        String? prefix = 'annotation',
-      }) {
-    final name = dartField.name;
-    final namespace = dartField.namespace;
+  void writeXmlAttributeDartAnnotation(
+    XmlAttributeDartAnnotation annotation,
+  ) {
+    final name = annotation.name;
+    final namespace = annotation.namespace;
 
     _sink.write(
-      '@',
-    );
-
-    if (prefix != null) {
-      _sink.write(
-        '$prefix.',
-      );
-    }
-
-    _sink.write(
-      'XmlAttribute(name: \'$name\'',
+      '@annotation.XmlAttribute(name: \'$name\'',
     );
 
     if (namespace != null) {
@@ -218,44 +199,22 @@ class XmlToDartStringWriter {
     );
   }
 
-  void writeXmlCDATAAnnotation(
-      XmlCDATADartField dartField, {
-        String? prefix = 'annotation',
-      }) {
-    _sink.write(
-      '@',
-    );
-
-    if (prefix != null) {
-      _sink.write(
-        '$prefix.',
-      );
-    }
-
+  void writeXmlCDATADartAnnotation(
+    XmlCDATADartAnnotation annotation,
+  ) {
     _sink.writeln(
-      'XmlCDATA()',
+      '@annotation.XmlCDATA()',
     );
   }
 
-  void writeXmlElementAnnotation(
-      XmlElementDartField dartField, {
-        String? prefix = 'annotation',
-      }) {
-    final name = dartField.name;
-    final namespace = dartField.namespace;
+  void writeXmlElementDartAnnotation(
+    XmlElementDartAnnotation annotation,
+  ) {
+    final name = annotation.name;
+    final namespace = annotation.namespace;
 
     _sink.write(
-      '@',
-    );
-
-    if (prefix != null) {
-      _sink.write(
-        '$prefix.',
-      );
-    }
-
-    _sink.write(
-      'XmlElement(name: \'$name\'',
+      '@annotation.XmlElement(name: \'$name\'',
     );
 
     if (namespace != null) {
@@ -269,25 +228,14 @@ class XmlToDartStringWriter {
     );
   }
 
-  void writeXmlRootElementAnnotation(
-      DartClass dartClass, {
-        String? prefix = 'annotation',
-      }) {
-    final name = dartClass.name;
-    final namespace = dartClass.namespace;
+  void writeXmlRootElementDartAnnotation(
+    XmlRootElementDartAnnotation annotation,
+  ) {
+    final name = annotation.name;
+    final namespace = annotation.namespace;
 
     _sink.write(
-      '@',
-    );
-
-    if (prefix != null) {
-      _sink.write(
-        '$prefix.',
-      );
-    }
-
-    _sink.write(
-      'XmlRootElement(name: \'$name\'',
+      '@annotation.XmlRootElement(name: \'$name\'',
     );
 
     if (namespace != null) {
@@ -301,41 +249,19 @@ class XmlToDartStringWriter {
     );
   }
 
-  void writeXmlSerializableAnnotation(
-      DartClass dartClass, {
-        String? prefix = 'annotation',
-      }) {
-    _sink.write(
-      '@',
-    );
-
-    if (prefix != null) {
-      _sink.write(
-        '$prefix.',
-      );
-    }
-
+  void writeXmlSerializableDartAnnotation(
+    XmlSerializableDartAnnotation annotation,
+  ) {
     _sink.writeln(
-      'XmlSerializable()',
+      '@annotation.XmlSerializable()',
     );
   }
 
-  void writeXmlTextAnnotation(
-      XmlTextDartField dartField, {
-        String? prefix = 'annotation',
-      }) {
-    _sink.write(
-      '@',
-    );
-
-    if (prefix != null) {
-      _sink.write(
-        '$prefix.',
-      );
-    }
-
+  void writeXmlTextDartAnnotation(
+    XmlTextDartAnnotation annotation,
+  ) {
     _sink.writeln(
-      'XmlText()',
+      '@annotation.XmlText()',
     );
   }
 

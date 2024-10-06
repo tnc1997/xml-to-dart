@@ -35,51 +35,6 @@ class DartType {
   }
 }
 
-class BoolDartType extends DartType {
-  const BoolDartType({
-    NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
-  }) : super(
-          name: 'bool',
-          nullabilitySuffix: nullabilitySuffix,
-        );
-}
-
-class DateTimeDartType extends DartType {
-  const DateTimeDartType({
-    NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
-  }) : super(
-          name: 'DateTime',
-          nullabilitySuffix: nullabilitySuffix,
-        );
-}
-
-class DoubleDartType extends DartType {
-  const DoubleDartType({
-    NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
-  }) : super(
-          name: 'double',
-          nullabilitySuffix: nullabilitySuffix,
-        );
-}
-
-class IntDartType extends DartType {
-  const IntDartType({
-    NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
-  }) : super(
-          name: 'int',
-          nullabilitySuffix: nullabilitySuffix,
-        );
-}
-
-class StringDartType extends DartType {
-  const StringDartType({
-    NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
-  }) : super(
-          name: 'String',
-          nullabilitySuffix: nullabilitySuffix,
-        );
-}
-
 /// Suffix indicating the nullability of a type.
 ///
 /// This enum describes whether a `?` would be used at the end of the canonical representation of a type. It's subtly different the notions of "nullable" and "non-nullable" defined by the spec. For example, the type `Null` is nullable, even though it lacks a trailing `?`.

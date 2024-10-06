@@ -8,14 +8,24 @@ DartType typer(
   String value,
 ) {
   if (int.tryParse(value) != null) {
-    return const IntDartType();
+    return const DartType(
+      name: 'int',
+    );
   } else if (double.tryParse(value) != null) {
-    return const DoubleDartType();
+    return const DartType(
+      name: 'double',
+    );
   } else if (DateTime.tryParse(value) != null) {
-    return const DateTimeDartType();
+    return const DartType(
+      name: 'DateTime',
+    );
   } else if (value == 'true' || value == 'false') {
-    return const BoolDartType();
+    return const DartType(
+      name: 'bool',
+    );
   } else {
-    return const StringDartType();
+    return const DartType(
+      name: 'String',
+    );
   }
 }

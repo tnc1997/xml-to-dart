@@ -43,6 +43,16 @@ class DartType {
     return identical(this, other) || other is DartType && name == other.name;
   }
 
+  DartType copyWith({
+    String? name,
+    NullabilitySuffix? nullabilitySuffix,
+  }) {
+    return DartType(
+      name: name ?? this.name,
+      nullabilitySuffix: nullabilitySuffix ?? this.nullabilitySuffix,
+    );
+  }
+
   DartType mergeWith(
     DartType other,
   ) {

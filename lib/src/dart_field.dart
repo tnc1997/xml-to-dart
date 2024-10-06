@@ -24,7 +24,7 @@ class DartField {
         const XmlCDATADartAnnotation(),
       ],
       type: DartType.fromValue(
-        event.value,
+        event.value.trim(),
       ),
     );
   }
@@ -40,7 +40,7 @@ class DartField {
         ),
       ],
       type: DartType.fromValue(
-        attribute.value,
+        attribute.value.trim(),
       ),
     );
   }
@@ -71,7 +71,7 @@ class DartField {
         const XmlTextDartAnnotation(),
       ],
       type: DartType.fromValue(
-        event.value,
+        event.value.trim(),
       ),
     );
   }
@@ -95,6 +95,18 @@ class DartField {
       name: name ?? this.name,
       annotations: annotations ?? this.annotations,
       type: type ?? this.type,
+    );
+  }
+
+  DartField mergeWith(
+    DartField other,
+  ) {
+    final type = this.type.mergeWith(other.type);
+
+    return DartField(
+      name: name,
+      annotations: annotations,
+      type: type,
     );
   }
 

@@ -6,7 +6,6 @@ import 'package:xml/xml_events.dart';
 import 'dart_annotation.dart';
 import 'dart_class.dart';
 import 'dart_field.dart';
-import 'dart_type.dart';
 
 extension ToDartClassListExtension on Stream<List<XmlEvent>> {
   Future<List<DartClass>> toDartClassList() async {
@@ -23,26 +22,16 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
             for (final attribute in event.attributes) {
               fields.update(
                 attribute.localName.camelCase,
-                (value) {
-                  return value.copyWith(
-                    type: value.type.mergeWith(
-                      DartType.fromValue(
-                        attribute.value,
-                      ),
+                (field) {
+                  return field.mergeWith(
+                    DartField.fromXmlEventAttribute(
+                      attribute,
                     ),
                   );
                 },
                 ifAbsent: () {
-                  return DartField(
-                    name: attribute.localName.camelCase,
-                    annotations: [
-                      XmlAttributeDartAnnotation.fromXmlEventAttribute(
-                        attribute,
-                      ),
-                    ],
-                    type: DartType.fromValue(
-                      attribute.value,
-                    ),
+                  return DartField.fromXmlEventAttribute(
+                    attribute,
                   );
                 },
               );
@@ -76,66 +65,55 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
               },
             );
 
-            final parent = event.parent;
-            if (parent != null) {
-              classes[pascalCaseNamer(
-                parent.name,
-                parent.namespaceUri,
-              )]
-                  ?.fields[camelCaseNamer(
-                event.localName,
-                event.namespaceUri,
-              )] = DartField(
-                name: camelCaseNamer(
-                  event.localName,
-                  event.namespaceUri,
-                ),
-                annotations: [
-                  XmlElementDartAnnotation.fromXmlStartElementEvent(
+            classes[event.parent?.name.pascalCase]?.fields.update(
+              event.localName.camelCase,
+              (field) {
+                return field.mergeWith(
+                  DartField.fromXmlStartElementEvent(
                     event,
                   ),
-                ],
-                type: DartType(
-                  name: pascalCaseNamer(
-                    event.localName,
-                    event.namespaceUri,
-                  ),
-                  nullabilitySuffix: NullabilitySuffix.none,
-                ),
-              );
-            }
+                );
+              },
+              ifAbsent: () {
+                return DartField.fromXmlStartElementEvent(
+                  event,
+                );
+              },
+            );
           } else if (event is XmlCDATAEvent) {
-            final parent = event.parent;
-            if (parent != null && event.value.isNotEmpty) {
-              classes[pascalCaseNamer(
-                parent.name,
-                parent.namespaceUri,
-              )]
-                  ?.fields['cdata'] = DartField(
-                name: 'cdata',
-                annotations: [
-                  const XmlCDATADartAnnotation(),
-                ],
-                type: DartType.fromValue(
-                  event.value,
-                ),
+            if (event.value.trim().isNotEmpty) {
+              classes[event.parent?.name.pascalCase]?.fields.update(
+                'cdata',
+                (field) {
+                  return field.mergeWith(
+                    DartField.fromXmlCDATAEvent(
+                      event,
+                    ),
+                  );
+                },
+                ifAbsent: () {
+                  return DartField.fromXmlCDATAEvent(
+                    event,
+                  );
+                },
               );
             }
           } else if (event is XmlTextEvent) {
-            final parent = event.parent;
-            if (parent != null && event.value.isNotEmpty) {
-              classes[pascalCaseNamer(
-                parent.name,
-                parent.namespaceUri,
-              )]
-                  ?.fields['text'] = DartField(
-                name: 'text',
-                annotations: [
-                  const XmlTextDartAnnotation(),
-                ],
-                type: DartType.fromValue(
-                  event.value,
-                ),
+            if (event.value.trim().isNotEmpty) {
+              classes[event.parent?.name.pascalCase]?.fields.update(
+                'text',
+                (field) {
+                  return field.mergeWith(
+                    DartField.fromXmlTextEvent(
+                      event,
+                    ),
+                  );
+                },
+                ifAbsent: () {
+                  return DartField.fromXmlTextEvent(
+                    event,
+                  );
+                },
               );
             }
           }

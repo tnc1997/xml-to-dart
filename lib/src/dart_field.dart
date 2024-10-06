@@ -1,5 +1,8 @@
+import 'package:xml/xml_events.dart';
+
 import 'dart_annotation.dart';
 import 'dart_type.dart';
+import 'namer.dart';
 
 class DartField {
   final String name;
@@ -11,6 +14,25 @@ class DartField {
     required this.annotations,
     required this.type,
   });
+
+  factory DartField.fromXmlEventAttribute(
+    XmlEventAttribute attribute,
+  ) {
+    return DartField(
+      name: camelCaseNamer(
+        attribute.localName,
+        attribute.namespaceUri,
+      ),
+      annotations: [
+        XmlAttributeDartAnnotation.fromXmlEventAttribute(
+          attribute,
+        ),
+      ],
+      type: DartType.fromValue(
+        attribute.value,
+      ),
+    );
+  }
 
   @override
   int get hashCode {

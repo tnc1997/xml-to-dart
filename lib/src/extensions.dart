@@ -8,100 +8,87 @@ import 'dart_field.dart';
 
 extension ToDartClassListExtension on Stream<List<XmlEvent>> {
   Future<List<DartClass>> toDartClassList() async {
-    final classes = <String, DartClass>{};
+    final classes = <DartClass>[];
 
     final completer = Completer<List<DartClass>>();
 
     final subscription = listen(
       (events) {
         for (final event in events) {
-          if (event is XmlStartElementEvent) {
-            final fields = <String, DartField>{};
+          final parent = classes.cast<DartClass?>().singleWhere(
+            (class_) {
+              return class_?.name == event.parent?.name.pascalCase;
+            },
+            orElse: () {
+              return null;
+            },
+          );
 
-            for (final attribute in event.attributes) {
-              fields.update(
-                attribute.localName.camelCase,
-                (field) {
-                  return field.mergeWith(
-                    DartField.fromXmlEventAttribute(
-                      attribute,
-                    ),
-                  );
-                },
-                ifAbsent: () {
-                  return DartField.fromXmlEventAttribute(
-                    attribute,
-                  );
-                },
-              );
+          if (event is XmlStartElementEvent) {
+            final other = DartClass.fromXmlStartElementEvent(event);
+
+            final index = classes.indexWhere(
+              (class_) {
+                return class_ == other;
+              },
+            );
+
+            if (index >= 0) {
+              classes[index] = classes[index].mergeWith(other);
+            } else {
+              classes.add(other);
             }
 
-            classes.update(
-              event.localName.pascalCase,
-              (class_) {
-                return class_.mergeWith(
-                  DartClass.fromXmlStartElementEvent(
-                    event,
-                  ),
-                );
-              },
-              ifAbsent: () {
-                return DartClass.fromXmlStartElementEvent(
-                  event,
-                );
-              },
-            );
+            if (parent != null) {
+              final other = DartField.fromXmlStartElementEvent(event);
 
-            classes[event.parent?.name.pascalCase]?.fields.update(
-              event.localName.camelCase,
-              (field) {
-                return field.mergeWith(
-                  DartField.fromXmlStartElementEvent(
-                    event,
-                  ),
-                );
-              },
-              ifAbsent: () {
-                return DartField.fromXmlStartElementEvent(
-                  event,
-                );
-              },
-            );
-          } else if (event is XmlCDATAEvent) {
-            if (event.value.trim().isNotEmpty) {
-              classes[event.parent?.name.pascalCase]?.fields.update(
-                'cdata',
+              final index = parent.fields.indexWhere(
                 (field) {
-                  return field.mergeWith(
-                    DartField.fromXmlCDATAEvent(
-                      event,
-                    ),
-                  );
-                },
-                ifAbsent: () {
-                  return DartField.fromXmlCDATAEvent(
-                    event,
-                  );
+                  return field == other;
                 },
               );
+
+              if (index >= 0) {
+                parent.fields[index] = parent.fields[index].mergeWith(other);
+              } else {
+                parent.fields.add(other);
+              }
+            }
+          } else if (event is XmlCDATAEvent) {
+            if (parent != null) {
+              if (event.value.trim().isNotEmpty) {
+                final other = DartField.fromXmlCDATAEvent(event);
+
+                final index = parent.fields.indexWhere(
+                  (field) {
+                    return field == other;
+                  },
+                );
+
+                if (index >= 0) {
+                  parent.fields[index] = parent.fields[index].mergeWith(other);
+                } else {
+                  parent.fields.add(other);
+                }
+              }
             }
           } else if (event is XmlTextEvent) {
-            if (event.value.trim().isNotEmpty) {
-              classes[event.parent?.name.pascalCase]?.fields.update(
-                'text',
-                (field) {
-                  return field.mergeWith(
-                    DartField.fromXmlTextEvent(
-                      event,
-                    ),
-                  );
-                },
-                ifAbsent: () {
-                  return DartField.fromXmlTextEvent(
-                    event,
-                  );
-                },
-              );
+            if (parent != null) {
+              if (event.value.trim().isNotEmpty) {
+                final other = DartField.fromXmlTextEvent(event);
+
+                final index = parent.fields.indexWhere(
+                  (field) {
+                    return field == other;
+                  },
+                );
+
+                if (index >= 0) {
+                  parent.fields[index] = parent.fields[index].mergeWith(other);
+                } else {
+                  parent.fields.add(other);
+                }
+              }
             }
           }
         }
@@ -110,7 +97,7 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
         completer.completeError(error, stackTrace);
       },
       onDone: () {
-        completer.complete([...classes.values]);
+        completer.complete(classes);
       },
       cancelOnError: true,
     );

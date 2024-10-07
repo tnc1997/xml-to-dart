@@ -7,7 +7,7 @@ import 'dart_field.dart';
 class DartClass {
   final String name;
   final List<DartAnnotation> annotations;
-  final Map<String, DartField> fields;
+  final List<DartField> fields;
 
   const DartClass({
     required this.name,
@@ -26,12 +26,12 @@ class DartClass {
         ),
         const XmlSerializableDartAnnotation(),
       ],
-      fields: {
+      fields: [
         for (final attribute in event.attributes)
-          attribute.localName.camelCase: DartField.fromXmlEventAttribute(
+          DartField.fromXmlEventAttribute(
             attribute,
           ),
-      },
+      ],
     );
   }
 
@@ -48,7 +48,7 @@ class DartClass {
   DartClass copyWith({
     String? name,
     List<DartAnnotation>? annotations,
-    Map<String, DartField>? fields,
+    List<DartField>? fields,
   }) {
     return DartClass(
       name: name ?? this.name,
@@ -62,16 +62,18 @@ class DartClass {
   ) {
     final fields = this.fields;
 
-    for (final other in other.fields.values) {
-      fields.update(
-        other.name,
+    for (final other in other.fields) {
+      final index = fields.indexWhere(
         (field) {
-          return field.mergeWith(other);
-        },
-        ifAbsent: () {
-          return other;
+          return field == other;
         },
       );
+
+      if (index >= 0) {
+        fields[index] = fields[index].mergeWith(other);
+      } else {
+        fields.add(other);
+      }
     }
 
     return DartClass(

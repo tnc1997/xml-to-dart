@@ -1,4 +1,5 @@
 import 'package:recase/recase.dart';
+import 'package:xml/xml.dart';
 import 'package:xml/xml_events.dart';
 
 import 'dart_annotation.dart';
@@ -15,6 +16,36 @@ class DartField {
     required this.type,
   });
 
+  factory DartField.fromXmlAttribute(
+    XmlAttribute attribute,
+  ) {
+    return DartField(
+      name: attribute.localName.camelCase,
+      annotations: [
+        XmlAttributeDartAnnotation.fromXmlAttribute(
+          attribute,
+        ),
+      ],
+      type: DartType.fromValue(
+        attribute.value.trim(),
+      ),
+    );
+  }
+
+  factory DartField.fromXmlCDATA(
+    XmlCDATA cdata,
+  ) {
+    return DartField(
+      name: 'cdata',
+      annotations: [
+        const XmlCDATADartAnnotation(),
+      ],
+      type: DartType.fromValue(
+        cdata.value.trim(),
+      ),
+    );
+  }
+
   factory DartField.fromXmlCDATAEvent(
     XmlCDATAEvent event,
   ) {
@@ -25,6 +56,23 @@ class DartField {
       ],
       type: DartType.fromValue(
         event.value.trim(),
+      ),
+    );
+  }
+
+  factory DartField.fromXmlElement(
+    XmlElement element,
+  ) {
+    return DartField(
+      name: element.localName.camelCase,
+      annotations: [
+        XmlElementDartAnnotation.fromXmlElement(
+          element,
+        ),
+      ],
+      type: DartType(
+        name: element.localName.pascalCase,
+        nullabilitySuffix: NullabilitySuffix.none,
       ),
     );
   }
@@ -58,6 +106,20 @@ class DartField {
       type: DartType(
         name: event.localName.pascalCase,
         nullabilitySuffix: NullabilitySuffix.none,
+      ),
+    );
+  }
+
+  factory DartField.fromXmlText(
+    XmlText text,
+  ) {
+    return DartField(
+      name: 'text',
+      annotations: [
+        const XmlTextDartAnnotation(),
+      ],
+      type: DartType.fromValue(
+        text.value.trim(),
       ),
     );
   }

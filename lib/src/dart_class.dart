@@ -1,8 +1,10 @@
 import 'package:recase/recase.dart';
+import 'package:xml/xml.dart';
 import 'package:xml/xml_events.dart';
 
 import 'dart_annotation.dart';
 import 'dart_field.dart';
+import 'dart_type.dart';
 
 class DartClass {
   final String name;
@@ -14,6 +16,58 @@ class DartClass {
     required this.annotations,
     required this.fields,
   });
+
+  factory DartClass.fromXmlElement(
+    XmlElement element,
+  ) {
+    final fields = <DartField>[];
+
+    for (final attribute in element.attributes) {
+      fields.add(DartField.fromXmlAttribute(attribute));
+    }
+
+    final cdata = StringBuffer();
+    final text = StringBuffer();
+
+    for (final child in element.children) {
+      if (child is XmlElement) {
+        fields.add(DartField.fromXmlElement(child));
+      } else if (child is XmlCDATA) {
+        cdata.write(child.value.trim());
+      } else if (child is XmlText) {
+        text.write(child.value.trim());
+      }
+    }
+
+    if (cdata.isNotEmpty) {
+      fields.add(
+        DartField(
+          name: 'cdata',
+          annotations: [const XmlCDATADartAnnotation()],
+          type: DartType.fromValue(cdata.toString()),
+        ),
+      );
+    }
+
+    if (text.isNotEmpty) {
+      fields.add(
+        DartField(
+          name: 'text',
+          annotations: [const XmlTextDartAnnotation()],
+          type: DartType.fromValue(text.toString()),
+        ),
+      );
+    }
+
+    return DartClass(
+      name: element.localName.pascalCase,
+      annotations: [
+        XmlRootElementDartAnnotation.fromXmlElement(element),
+        const XmlSerializableDartAnnotation(),
+      ],
+      fields: fields,
+    );
+  }
 
   factory DartClass.fromXmlStartElementEvent(
     XmlStartElementEvent event,

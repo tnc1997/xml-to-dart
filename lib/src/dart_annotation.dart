@@ -82,6 +82,16 @@ class XmlRootElementDartAnnotation extends DartAnnotation {
     this.isSelfClosing,
   });
 
+  factory XmlRootElementDartAnnotation.fromXmlElement(
+    XmlElement element,
+  ) {
+    return XmlRootElementDartAnnotation(
+      name: element.localName,
+      namespace: element.namespaceUri,
+      isSelfClosing: element.isSelfClosing,
+    );
+  }
+
   factory XmlRootElementDartAnnotation.fromXmlStartElementEvent(
     XmlStartElementEvent event,
   ) {

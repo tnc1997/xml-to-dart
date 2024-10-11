@@ -57,7 +57,7 @@ class XmlToDartStringWriter {
       'class ${class_.name} {',
     );
 
-    for (final field in class_.fields) {
+    for (final field in class_.fields.values) {
       writeDartField(field);
     }
 
@@ -119,7 +119,7 @@ class XmlToDartStringWriter {
         '{',
       );
 
-      for (final field in class_.fields) {
+      for (final field in class_.fields.values) {
         if (field.type.nullabilitySuffix == NullabilitySuffix.none) {
           _sink.write(
             'required ',

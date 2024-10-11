@@ -9,7 +9,7 @@ import 'dart_type.dart';
 class DartClass {
   final String name;
   final List<DartAnnotation> annotations;
-  final List<DartField> fields;
+  final Map<String, DartField> fields;
 
   const DartClass({
     required this.name,
@@ -20,10 +20,11 @@ class DartClass {
   factory DartClass.fromXmlElement(
     XmlElement element,
   ) {
-    final fields = <DartField>[];
+    final fields = <String, DartField>{};
 
     for (final attribute in element.attributes) {
-      fields.add(DartField.fromXmlAttribute(attribute));
+      fields[attribute.localName.camelCase] =
+          DartField.fromXmlAttribute(attribute);
     }
 
     final cdata = StringBuffer();
@@ -31,7 +32,7 @@ class DartClass {
 
     for (final child in element.children) {
       if (child is XmlElement) {
-        fields.add(DartField.fromXmlElement(child));
+        fields[child.localName.camelCase] = DartField.fromXmlElement(child);
       } else if (child is XmlCDATA) {
         cdata.write(child.value.trim());
       } else if (child is XmlText) {
@@ -40,22 +41,18 @@ class DartClass {
     }
 
     if (cdata.isNotEmpty) {
-      fields.add(
-        DartField(
-          name: 'cdata',
-          annotations: [const XmlCDATADartAnnotation()],
-          type: DartType.fromValue(cdata.toString()),
-        ),
+      fields['cdata'] = DartField(
+        name: 'cdata',
+        annotations: [const XmlCDATADartAnnotation()],
+        type: DartType.fromValue(cdata.toString()),
       );
     }
 
     if (text.isNotEmpty) {
-      fields.add(
-        DartField(
-          name: 'text',
-          annotations: [const XmlTextDartAnnotation()],
-          type: DartType.fromValue(text.toString()),
-        ),
+      fields['text'] = DartField(
+        name: 'text',
+        annotations: [const XmlTextDartAnnotation()],
+        type: DartType.fromValue(text.toString()),
       );
     }
 
@@ -80,12 +77,12 @@ class DartClass {
         ),
         const XmlSerializableDartAnnotation(),
       ],
-      fields: [
+      fields: {
         for (final attribute in event.attributes)
-          DartField.fromXmlEventAttribute(
+          attribute.localName.camelCase: DartField.fromXmlEventAttribute(
             attribute,
           ),
-      ],
+      },
     );
   }
 
@@ -102,7 +99,7 @@ class DartClass {
   DartClass copyWith({
     String? name,
     List<DartAnnotation>? annotations,
-    List<DartField>? fields,
+    Map<String, DartField>? fields,
   }) {
     return DartClass(
       name: name ?? this.name,
@@ -114,20 +111,16 @@ class DartClass {
   DartClass mergeWith(
     DartClass other,
   ) {
-    final fields = this.fields;
-
-    for (final other in other.fields) {
-      final index = fields.indexWhere(
-        (field) {
-          return field == other;
+    for (final entry in other.fields.entries) {
+      fields.update(
+        entry.key,
+        (value) {
+          return value.mergeWith(entry.value);
+        },
+        ifAbsent: () {
+          return entry.value;
         },
       );
-
-      if (index >= 0) {
-        fields[index] = fields[index].mergeWith(other);
-      } else {
-        fields.add(other);
-      }
     }
 
     return DartClass(

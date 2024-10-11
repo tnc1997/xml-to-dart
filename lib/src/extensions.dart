@@ -42,34 +42,30 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
             if (parent != null) {
               final other = DartField.fromXmlStartElementEvent(event);
 
-              final index = parent.fields.indexWhere(
-                (field) {
-                  return field == other;
+              parent.fields.update(
+                other.name,
+                (value) {
+                  return value.mergeWith(other);
+                },
+                ifAbsent: () {
+                  return other;
                 },
               );
-
-              if (index >= 0) {
-                parent.fields[index] = parent.fields[index].mergeWith(other);
-              } else {
-                parent.fields.add(other);
-              }
             }
           } else if (event is XmlCDATAEvent) {
             if (parent != null) {
               if (event.value.trim().isNotEmpty) {
                 final other = DartField.fromXmlCDATAEvent(event);
 
-                final index = parent.fields.indexWhere(
-                  (field) {
-                    return field == other;
+                parent.fields.update(
+                  other.name,
+                  (value) {
+                    return value.mergeWith(other);
+                  },
+                  ifAbsent: () {
+                    return other;
                   },
                 );
-
-                if (index >= 0) {
-                  parent.fields[index] = parent.fields[index].mergeWith(other);
-                } else {
-                  parent.fields.add(other);
-                }
               }
             }
           } else if (event is XmlTextEvent) {
@@ -77,17 +73,15 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
               if (event.value.trim().isNotEmpty) {
                 final other = DartField.fromXmlTextEvent(event);
 
-                final index = parent.fields.indexWhere(
-                  (field) {
-                    return field == other;
+                parent.fields.update(
+                  other.name,
+                  (value) {
+                    return value.mergeWith(other);
+                  },
+                  ifAbsent: () {
+                    return other;
                   },
                 );
-
-                if (index >= 0) {
-                  parent.fields[index] = parent.fields[index].mergeWith(other);
-                } else {
-                  parent.fields.add(other);
-                }
               }
             }
           }

@@ -7,12 +7,10 @@ import 'dart_field.dart';
 import 'dart_type.dart';
 
 class DartClass {
-  final String name;
   final List<DartAnnotation> annotations;
   final Map<String, DartField> fields;
 
   const DartClass({
-    required this.name,
     required this.annotations,
     required this.fields,
   });
@@ -42,7 +40,6 @@ class DartClass {
 
     if (cdata.isNotEmpty) {
       fields['cdata'] = DartField(
-        name: 'cdata',
         annotations: [const XmlCDATADartAnnotation()],
         type: DartType.fromValue(cdata.toString()),
       );
@@ -50,14 +47,12 @@ class DartClass {
 
     if (text.isNotEmpty) {
       fields['text'] = DartField(
-        name: 'text',
         annotations: [const XmlTextDartAnnotation()],
         type: DartType.fromValue(text.toString()),
       );
     }
 
     return DartClass(
-      name: element.localName.pascalCase,
       annotations: [
         XmlRootElementDartAnnotation.fromXmlElement(element),
         const XmlSerializableDartAnnotation(),
@@ -70,7 +65,6 @@ class DartClass {
     XmlStartElementEvent event,
   ) {
     return DartClass(
-      name: event.localName.pascalCase,
       annotations: [
         XmlRootElementDartAnnotation.fromXmlStartElementEvent(
           event,
@@ -86,23 +80,12 @@ class DartClass {
     );
   }
 
-  @override
-  int get hashCode {
-    return name.hashCode;
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) || other is DartClass && name == other.name;
-  }
-
   DartClass copyWith({
     String? name,
     List<DartAnnotation>? annotations,
     Map<String, DartField>? fields,
   }) {
     return DartClass(
-      name: name ?? this.name,
       annotations: annotations ?? this.annotations,
       fields: fields ?? this.fields,
     );
@@ -124,14 +107,8 @@ class DartClass {
     }
 
     return DartClass(
-      name: name,
       annotations: annotations,
       fields: fields,
     );
-  }
-
-  @override
-  String toString() {
-    return name;
   }
 }

@@ -7,43 +7,34 @@ import 'dart_class.dart';
 import 'dart_field.dart';
 
 extension ToDartClassListExtension on Stream<List<XmlEvent>> {
-  Future<List<DartClass>> toDartClassList() async {
-    final classes = <DartClass>[];
+  Future<Map<String, DartClass>> toDartClassMap() async {
+    final classes = <String, DartClass>{};
 
-    final completer = Completer<List<DartClass>>();
+    final completer = Completer<Map<String, DartClass>>();
 
     final subscription = listen(
       (events) {
         for (final event in events) {
-          final parent = classes.cast<DartClass?>().singleWhere(
-            (class_) {
-              return class_?.name == event.parent?.name.pascalCase;
-            },
-            orElse: () {
-              return null;
-            },
-          );
+          final parent = classes[event.parent?.name.pascalCase];
 
           if (event is XmlStartElementEvent) {
             final other = DartClass.fromXmlStartElementEvent(event);
 
-            final index = classes.indexWhere(
-              (class_) {
-                return class_ == other;
+            classes.update(
+              event.localName.pascalCase,
+              (value) {
+                return value.mergeWith(other);
+              },
+              ifAbsent: () {
+                return other;
               },
             );
-
-            if (index >= 0) {
-              classes[index] = classes[index].mergeWith(other);
-            } else {
-              classes.add(other);
-            }
 
             if (parent != null) {
               final other = DartField.fromXmlStartElementEvent(event);
 
               parent.fields.update(
-                other.name,
+                event.localName.camelCase,
                 (value) {
                   return value.mergeWith(other);
                 },
@@ -58,7 +49,7 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
                 final other = DartField.fromXmlCDATAEvent(event);
 
                 parent.fields.update(
-                  other.name,
+                  'cdata',
                   (value) {
                     return value.mergeWith(other);
                   },
@@ -74,7 +65,7 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
                 final other = DartField.fromXmlTextEvent(event);
 
                 parent.fields.update(
-                  other.name,
+                  'text',
                   (value) {
                     return value.mergeWith(other);
                   },

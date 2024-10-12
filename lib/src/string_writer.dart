@@ -11,18 +11,18 @@ class XmlToDartStringWriter {
   const XmlToDartStringWriter(this._sink);
 
   void writeBuildXmlChildrenMethod(
-    DartClass class_,
+    String name,
   ) {
     _sink.writeln(
-      'void buildXmlChildren(XmlBuilder builder, {Map<String, String> namespaces = const {}}) => _\$${class_.name}BuildXmlChildren(this, builder, namespaces: namespaces);',
+      'void buildXmlChildren(XmlBuilder builder, {Map<String, String> namespaces = const {}}) => _\$${name.pascalCase}BuildXmlChildren(this, builder, namespaces: namespaces);',
     );
   }
 
   void writeBuildXmlElementMethod(
-    DartClass class_,
+    String name,
   ) {
     _sink.writeln(
-      'void buildXmlElement(XmlBuilder builder, {Map<String, String> namespaces = const {}}) => _\$${class_.name}BuildXmlElement(this, builder, namespaces: namespaces);',
+      'void buildXmlElement(XmlBuilder builder, {Map<String, String> namespaces = const {}}) => _\$${name.pascalCase}BuildXmlElement(this, builder, namespaces: namespaces);',
     );
   }
 
@@ -47,6 +47,7 @@ class XmlToDartStringWriter {
   }
 
   void writeDartClass(
+    String name,
     DartClass class_,
   ) {
     for (final annotation in class_.annotations) {
@@ -54,23 +55,23 @@ class XmlToDartStringWriter {
     }
 
     _sink.writeln(
-      'class ${class_.name} {',
+      'class $name {',
     );
 
-    for (final field in class_.fields.values) {
-      writeDartField(field);
+    for (final entry in class_.fields.entries) {
+      writeDartField(entry.key, entry.value);
     }
 
-    writeGenerativeConstructor(class_);
+    writeGenerativeConstructor(name, class_.fields);
 
-    writeFromXmlElementFactoryConstructor(class_);
+    writeFromXmlElementFactoryConstructor(name);
 
-    writeBuildXmlChildrenMethod(class_);
-    writeBuildXmlElementMethod(class_);
+    writeBuildXmlChildrenMethod(name);
+    writeBuildXmlElementMethod(name);
 
-    writeToXmlAttributesMethod(class_);
-    writeToXmlChildrenMethod(class_);
-    writeToXmlElementMethod(class_);
+    writeToXmlAttributesMethod(name);
+    writeToXmlChildrenMethod(name);
+    writeToXmlElementMethod(name);
 
     _sink.writeln(
       '}',
@@ -78,6 +79,7 @@ class XmlToDartStringWriter {
   }
 
   void writeDartField(
+    String name,
     DartField field,
   ) {
     for (final annotation in field.annotations) {
@@ -95,39 +97,40 @@ class XmlToDartStringWriter {
     }
 
     _sink.writeln(
-      ' ${field.name};',
+      ' ${name.camelCase};',
     );
   }
 
   void writeFromXmlElementFactoryConstructor(
-    DartClass class_,
+    String name,
   ) {
     _sink.writeln(
-      'factory ${class_.name}.fromXmlElement(XmlElement element) => _\$${class_.name}FromXmlElement(element);',
+      'factory ${name.pascalCase}.fromXmlElement(XmlElement element) => _\$${name.pascalCase}FromXmlElement(element);',
     );
   }
 
   void writeGenerativeConstructor(
-    DartClass class_,
+    String name,
+    Map<String, DartField> fields,
   ) {
     _sink.write(
-      '${class_.name}(',
+      '${name.pascalCase}(',
     );
 
-    if (class_.fields.isNotEmpty) {
+    if (fields.isNotEmpty) {
       _sink.writeln(
         '{',
       );
 
-      for (final field in class_.fields.values) {
-        if (field.type.nullabilitySuffix == NullabilitySuffix.none) {
+      for (final entry in fields.entries) {
+        if (entry.value.type.nullabilitySuffix == NullabilitySuffix.none) {
           _sink.write(
             'required ',
           );
         }
 
         _sink.writeln(
-          'this.${field.name},',
+          'this.${entry.key.camelCase},',
         );
       }
 
@@ -142,34 +145,34 @@ class XmlToDartStringWriter {
   }
 
   void writePartDirective(
-    DartClass class_,
+    String name,
   ) {
     _sink.writeln(
-      'part \'${class_.name.snakeCase}.g.dart\';',
+      'part \'${name.snakeCase}.g.dart\';',
     );
   }
 
   void writeToXmlAttributesMethod(
-    DartClass class_,
+    String name,
   ) {
     _sink.writeln(
-      'List<XmlAttribute> toXmlAttributes({Map<String, String?> namespaces = const {}}) => _\$${class_.name}ToXmlAttributes(this, namespaces: namespaces);',
+      'List<XmlAttribute> toXmlAttributes({Map<String, String?> namespaces = const {}}) => _\$${name.pascalCase}ToXmlAttributes(this, namespaces: namespaces);',
     );
   }
 
   void writeToXmlChildrenMethod(
-    DartClass class_,
+    String name,
   ) {
     _sink.writeln(
-      'List<XmlNode> toXmlChildren({Map<String, String?> namespaces = const {}}) => _\$${class_.name}ToXmlChildren(this, namespaces: namespaces);',
+      'List<XmlNode> toXmlChildren({Map<String, String?> namespaces = const {}}) => _\$${name.pascalCase}ToXmlChildren(this, namespaces: namespaces);',
     );
   }
 
   void writeToXmlElementMethod(
-    DartClass class_,
+    String name,
   ) {
     _sink.writeln(
-      'XmlElement toXmlElement({Map<String, String?> namespaces = const {}}) => _\$${class_.name}ToXmlElement(this, namespaces: namespaces);',
+      'XmlElement toXmlElement({Map<String, String?> namespaces = const {}}) => _\$${name.pascalCase}ToXmlElement(this, namespaces: namespaces);',
     );
   }
 

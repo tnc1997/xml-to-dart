@@ -5,6 +5,7 @@ import 'package:xml/xml_events.dart';
 
 import 'dart_class.dart';
 import 'dart_field.dart';
+import 'dart_type.dart';
 
 extension ToDartClassListExtension on Stream<List<XmlEvent>> {
   Future<Map<String, DartClass>> toDartClassMap() async {
@@ -31,7 +32,15 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
             );
 
             if (parent != null) {
-              final other = DartField.fromXmlStartElementEvent(event);
+              final other = XmlElementDartField(
+                type: DartType(
+                  name: event.localName.pascalCase,
+                  nullabilitySuffix: NullabilitySuffix.none,
+                ),
+                name: event.localName,
+                namespace: event.namespaceUri,
+                isSelfClosing: event.isSelfClosing,
+              );
 
               parent.fields.update(
                 event.localName.camelCase,
@@ -46,7 +55,11 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
           } else if (event is XmlCDATAEvent) {
             if (parent != null) {
               if (event.value.trim().isNotEmpty) {
-                final other = DartField.fromXmlCDATAEvent(event);
+                final other = XmlCDATADartField(
+                  type: DartType.fromValue(
+                    event.value.trim(),
+                  ),
+                );
 
                 parent.fields.update(
                   'cdata',
@@ -62,7 +75,11 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
           } else if (event is XmlTextEvent) {
             if (parent != null) {
               if (event.value.trim().isNotEmpty) {
-                final other = DartField.fromXmlTextEvent(event);
+                final other = XmlTextDartField(
+                  type: DartType.fromValue(
+                    event.value.trim(),
+                  ),
+                );
 
                 parent.fields.update(
                   'text',

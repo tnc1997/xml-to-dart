@@ -4,28 +4,18 @@ import 'package:xml/xml.dart';
 import 'dart_type.dart';
 
 class DartField {
-  final DartType type;
+  DartType type;
 
-  const DartField({
+  DartField({
     required this.type,
   });
-
-  DartField mergeWith(
-    DartField other,
-  ) {
-    return DartField(
-      type: type.mergeWith(
-        other.type,
-      ),
-    );
-  }
 }
 
 class XmlAttributeDartField extends DartField {
   final String name;
   final String? namespace;
 
-  const XmlAttributeDartField({
+  XmlAttributeDartField({
     required DartType type,
     required this.name,
     this.namespace,
@@ -42,23 +32,10 @@ class XmlAttributeDartField extends DartField {
       namespace: attribute.namespaceUri,
     );
   }
-
-  @override
-  XmlAttributeDartField mergeWith(
-    DartField other,
-  ) {
-    return XmlAttributeDartField(
-      type: type.mergeWith(
-        other.type,
-      ),
-      name: name,
-      namespace: namespace,
-    );
-  }
 }
 
 class XmlCDATADartField extends DartField {
-  const XmlCDATADartField({
+  XmlCDATADartField({
     required DartType type,
   }) : super(type: type);
 
@@ -71,17 +48,6 @@ class XmlCDATADartField extends DartField {
       ),
     );
   }
-
-  @override
-  XmlCDATADartField mergeWith(
-    DartField other,
-  ) {
-    return XmlCDATADartField(
-      type: type.mergeWith(
-        other.type,
-      ),
-    );
-  }
 }
 
 class XmlElementDartField extends DartField {
@@ -90,7 +56,7 @@ class XmlElementDartField extends DartField {
   final bool? isSelfClosing;
   final bool? includeIfNull;
 
-  const XmlElementDartField({
+  XmlElementDartField({
     required DartType type,
     required this.name,
     this.namespace,
@@ -110,25 +76,10 @@ class XmlElementDartField extends DartField {
       namespace: element.namespaceUri,
     );
   }
-
-  @override
-  XmlElementDartField mergeWith(
-    DartField other,
-  ) {
-    return XmlElementDartField(
-      type: type.mergeWith(
-        other.type,
-      ),
-      name: name,
-      namespace: namespace,
-      isSelfClosing: isSelfClosing,
-      includeIfNull: includeIfNull,
-    );
-  }
 }
 
 class XmlTextDartField extends DartField {
-  const XmlTextDartField({
+  XmlTextDartField({
     required DartType type,
   }) : super(type: type);
 
@@ -138,17 +89,6 @@ class XmlTextDartField extends DartField {
     return XmlTextDartField(
       type: DartType.fromValue(
         text.value.trim(),
-      ),
-    );
-  }
-
-  @override
-  XmlTextDartField mergeWith(
-    DartField other,
-  ) {
-    return XmlTextDartField(
-      type: type.mergeWith(
-        other.type,
       ),
     );
   }

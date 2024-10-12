@@ -98,7 +98,11 @@ class DartClass {
       fields.update(
         entry.key,
         (value) {
-          return value.mergeWith(entry.value);
+          return value
+            ..type = const DartTypeMerger().merge(
+              value.type,
+              entry.value.type,
+            );
         },
         ifAbsent: () {
           return entry.value;

@@ -45,7 +45,11 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
               parent.fields.update(
                 event.localName.camelCase,
                 (value) {
-                  return value.mergeWith(other);
+                  return value
+                    ..type = const DartTypeMerger().merge(
+                      value.type,
+                      other.type,
+                    );
                 },
                 ifAbsent: () {
                   return other;
@@ -64,7 +68,11 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
                 parent.fields.update(
                   'cdata',
                   (value) {
-                    return value.mergeWith(other);
+                    return value
+                      ..type = const DartTypeMerger().merge(
+                        value.type,
+                        other.type,
+                      );
                   },
                   ifAbsent: () {
                     return other;
@@ -84,7 +92,11 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
                 parent.fields.update(
                   'text',
                   (value) {
-                    return value.mergeWith(other);
+                    return value
+                      ..type = const DartTypeMerger().merge(
+                        value.type,
+                        other.type,
+                      );
                   },
                   ifAbsent: () {
                     return other;

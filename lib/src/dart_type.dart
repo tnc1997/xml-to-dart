@@ -34,64 +34,14 @@ class DartType {
   }
 
   @override
-  int get hashCode {
-    return name.hashCode;
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) || other is DartType && name == other.name;
-  }
-
-  DartType copyWith({
-    String? name,
-    NullabilitySuffix? nullabilitySuffix,
-  }) {
-    return DartType(
-      name: name ?? this.name,
-      nullabilitySuffix: nullabilitySuffix ?? this.nullabilitySuffix,
-    );
-  }
-
-  DartType mergeWith(
-    DartType other,
-  ) {
-    String name;
-    if (this.name == other.name) {
-      name = this.name;
-    } else if (this.name == 'int' && other.name == 'double') {
-      name = 'double';
-    } else if (this.name == 'double' && other.name == 'int') {
-      name = 'double';
-    } else {
-      name = 'String';
-    }
-
-    NullabilitySuffix nullabilitySuffix;
-    if (this.nullabilitySuffix == other.nullabilitySuffix) {
-      nullabilitySuffix = this.nullabilitySuffix;
-    } else if (this.nullabilitySuffix == NullabilitySuffix.question) {
-      nullabilitySuffix = NullabilitySuffix.question;
-    } else if (other.nullabilitySuffix == NullabilitySuffix.question) {
-      nullabilitySuffix = NullabilitySuffix.question;
-    } else {
-      nullabilitySuffix = NullabilitySuffix.none;
-    }
-
-    return DartType(
-      name: name,
-      nullabilitySuffix: nullabilitySuffix,
-    );
-  }
-
-  @override
   String toString() {
-    switch (nullabilitySuffix) {
-      case NullabilitySuffix.question:
-        return '$name?';
-      case NullabilitySuffix.none:
-        return name;
+    final buffer = StringBuffer(name);
+
+    if (nullabilitySuffix == NullabilitySuffix.question) {
+      buffer.write('?');
     }
+
+    return buffer.toString();
   }
 }
 
@@ -104,4 +54,40 @@ enum NullabilitySuffix {
 
   /// An indication that the canonical representation of the type under consideration does not end with `?`.
   none,
+}
+
+class DartTypeMerger {
+  const DartTypeMerger();
+
+  DartType merge(
+    DartType a,
+    DartType b,
+  ) {
+    String name;
+    if (a.name == b.name) {
+      name = a.name;
+    } else if (a.name == 'int' && b.name == 'double') {
+      name = 'double';
+    } else if (a.name == 'double' && b.name == 'int') {
+      name = 'double';
+    } else {
+      name = 'String';
+    }
+
+    NullabilitySuffix nullabilitySuffix;
+    if (a.nullabilitySuffix == b.nullabilitySuffix) {
+      nullabilitySuffix = a.nullabilitySuffix;
+    } else if (a.nullabilitySuffix == NullabilitySuffix.question) {
+      nullabilitySuffix = NullabilitySuffix.question;
+    } else if (b.nullabilitySuffix == NullabilitySuffix.question) {
+      nullabilitySuffix = NullabilitySuffix.question;
+    } else {
+      nullabilitySuffix = NullabilitySuffix.none;
+    }
+
+    return DartType(
+      name: name,
+      nullabilitySuffix: nullabilitySuffix,
+    );
+  }
 }

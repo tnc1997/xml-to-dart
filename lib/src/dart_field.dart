@@ -83,7 +83,7 @@ class DartFieldMerger {
     DartField b,
   ) {
     return DartField(
-      annotations: [...a.annotations],
+      annotations: a.annotations.toList(),
       type: _dartTypeMerger.merge(a.type, b.type),
     );
   }

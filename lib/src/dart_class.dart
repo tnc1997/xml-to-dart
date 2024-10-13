@@ -20,8 +20,73 @@ class DartClass {
     final fields = <String, DartField>{};
 
     for (final attribute in element.attributes) {
-      fields[attribute.localName.camelCase] =
-          DartField.fromXmlAttribute(attribute);
+      final other = DartField.fromXmlAttribute(attribute);
+
+      fields.update(
+        attribute.localName.camelCase,
+        (value) {
+          if (value.type.name == 'List' && other.type.name == 'List') {
+            return DartField(
+              annotations: value.annotations.toList(),
+              type: DartType(
+                name: 'List',
+                nullabilitySuffix: NullabilitySuffix.none,
+                typeArguments: [
+                  const DartTypeMerger().merge(
+                    value.type.typeArguments.single,
+                    other.type.typeArguments.single,
+                  ),
+                ],
+              ),
+            );
+          } else if (value.type.name == 'List') {
+            return DartField(
+              annotations: value.annotations.toList(),
+              type: DartType(
+                name: 'List',
+                nullabilitySuffix: NullabilitySuffix.none,
+                typeArguments: [
+                  const DartTypeMerger().merge(
+                    value.type.typeArguments.single,
+                    other.type,
+                  ),
+                ],
+              ),
+            );
+          } else if (other.type.name == 'List') {
+            return DartField(
+              annotations: value.annotations.toList(),
+              type: DartType(
+                name: 'List',
+                nullabilitySuffix: NullabilitySuffix.none,
+                typeArguments: [
+                  const DartTypeMerger().merge(
+                    value.type,
+                    other.type.typeArguments.single,
+                  ),
+                ],
+              ),
+            );
+          } else {
+            return DartField(
+              annotations: value.annotations.toList(),
+              type: DartType(
+                name: 'List',
+                nullabilitySuffix: NullabilitySuffix.none,
+                typeArguments: [
+                  const DartTypeMerger().merge(
+                    value.type,
+                    other.type,
+                  ),
+                ],
+              ),
+            );
+          }
+        },
+        ifAbsent: () {
+          return other;
+        },
+      );
     }
 
     final cdata = StringBuffer();
@@ -29,7 +94,73 @@ class DartClass {
 
     for (final child in element.children) {
       if (child is XmlElement) {
-        fields[child.localName.camelCase] = DartField.fromXmlElement(child);
+        final other = DartField.fromXmlElement(child);
+
+        fields.update(
+          child.localName.camelCase,
+          (value) {
+            if (value.type.name == 'List' && other.type.name == 'List') {
+              return DartField(
+                annotations: value.annotations.toList(),
+                type: DartType(
+                  name: 'List',
+                  nullabilitySuffix: NullabilitySuffix.none,
+                  typeArguments: [
+                    const DartTypeMerger().merge(
+                      value.type.typeArguments.single,
+                      other.type.typeArguments.single,
+                    ),
+                  ],
+                ),
+              );
+            } else if (value.type.name == 'List') {
+              return DartField(
+                annotations: value.annotations.toList(),
+                type: DartType(
+                  name: 'List',
+                  nullabilitySuffix: NullabilitySuffix.none,
+                  typeArguments: [
+                    const DartTypeMerger().merge(
+                      value.type.typeArguments.single,
+                      other.type,
+                    ),
+                  ],
+                ),
+              );
+            } else if (other.type.name == 'List') {
+              return DartField(
+                annotations: value.annotations.toList(),
+                type: DartType(
+                  name: 'List',
+                  nullabilitySuffix: NullabilitySuffix.none,
+                  typeArguments: [
+                    const DartTypeMerger().merge(
+                      value.type,
+                      other.type.typeArguments.single,
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return DartField(
+                annotations: value.annotations.toList(),
+                type: DartType(
+                  name: 'List',
+                  nullabilitySuffix: NullabilitySuffix.none,
+                  typeArguments: [
+                    const DartTypeMerger().merge(
+                      value.type,
+                      other.type,
+                    ),
+                  ],
+                ),
+              );
+            }
+          },
+          ifAbsent: () {
+            return other;
+          },
+        );
       } else if (child is XmlCDATA) {
         cdata.write(child.value.trim());
       } else if (child is XmlText) {
@@ -38,17 +169,11 @@ class DartClass {
     }
 
     if (cdata.isNotEmpty) {
-      fields['cdata'] = DartField(
-        annotations: [const XmlCDATADartAnnotation()],
-        type: DartType.fromValue(cdata.toString()),
-      );
+      fields['cdata'] = DartField.fromXmlCDATA(XmlCDATA('$cdata'));
     }
 
     if (text.isNotEmpty) {
-      fields['text'] = DartField(
-        annotations: [const XmlTextDartAnnotation()],
-        type: DartType.fromValue(text.toString()),
-      );
+      fields['text'] = DartField.fromXmlText(XmlText('$text'));
     }
 
     return DartClass(
@@ -83,7 +208,7 @@ class DartClassMerger {
     }
 
     return DartClass(
-      annotations: [...a.annotations],
+      annotations: a.annotations.toList(),
       fields: fields,
     );
   }

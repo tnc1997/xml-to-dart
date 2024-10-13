@@ -77,6 +77,10 @@ Future<void> main(
             return other;
           },
         );
+
+        for (final element in element.childElements) {
+          elements.add(element);
+        }
       }
     }
   }

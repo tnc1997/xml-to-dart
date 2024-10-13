@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -6,7 +5,7 @@ import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:path/path.dart';
 import 'package:recase/recase.dart';
-import 'package:xml/xml_events.dart';
+import 'package:xml/xml.dart';
 import 'package:xml_to_dart/xml_to_dart.dart';
 
 final parser = ArgParser()
@@ -54,22 +53,39 @@ Future<void> main(
     return;
   }
 
-  final classes = await input
-      .list()
-      .where((entity) => entity is File)
-      .cast<File>()
-      .where((file) => extension(file.path) == '.xml')
-      .asyncExpand((file) => file.openRead())
-      .transform(const Utf8Decoder())
-      .transform(XmlEventDecoder())
-      .transform(XmlWithParentEvents())
-      .toDartClassList();
+  final classes = <String, DartClass>{};
 
-  for (final class_ in classes) {
+  await for (final entity in input.list()) {
+    if (entity is File && extension(entity.path) == '.xml') {
+      final document = XmlDocument.parse(
+        await File(entity.path).readAsString(),
+      );
+
+      final elements = [document.rootElement];
+
+      while (elements.isNotEmpty) {
+        final element = elements.removeAt(0);
+
+        final other = DartClass.fromXmlElement(element);
+
+        classes.update(
+          element.localName.pascalCase,
+          (value) {
+            return const DartClassMerger().merge(value, other);
+          },
+          ifAbsent: () {
+            return other;
+          },
+        );
+      }
+    }
+  }
+
+  for (final entry in classes.entries) {
     final file = File(
       join(
         results.option('output') ?? Directory.current.path,
-        '${class_.name.snakeCase}.dart',
+        '${entry.key.snakeCase}.dart',
       ),
     );
 
@@ -80,9 +96,9 @@ Future<void> main(
     writer.writeXmlImportDirective();
     writer.writeXmlAnnotationImportDirective();
 
-    writer.writePartDirective(class_);
+    writer.writePartDirective(entry.key);
 
-    writer.writeDartClass(class_);
+    writer.writeDartClass(entry.key, entry.value);
 
     await sink.close();
   }

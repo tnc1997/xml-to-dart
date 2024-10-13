@@ -79,39 +79,31 @@ class DartClass {
       },
     );
   }
+}
 
-  DartClass copyWith({
-    String? name,
-    List<DartAnnotation>? annotations,
-    Map<String, DartField>? fields,
-  }) {
-    return DartClass(
-      annotations: annotations ?? this.annotations,
-      fields: fields ?? this.fields,
-    );
-  }
+class DartClassMerger {
+  const DartClassMerger();
 
-  DartClass mergeWith(
-    DartClass other,
+  DartClass merge(
+    DartClass a,
+    DartClass b,
   ) {
-    for (final entry in other.fields.entries) {
-      fields.update(
-        entry.key,
-        (value) {
-          return value
-            ..type = const DartTypeMerger().merge(
-              value.type,
-              entry.value.type,
-            );
-        },
-        ifAbsent: () {
-          return entry.value;
-        },
-      );
+    final fields = <String, DartField>{};
+    for (final entry in a.fields.entries) {
+      final other = b.fields[entry.key];
+      if (other != null) {
+        fields[entry.key] = entry.value
+          ..type = const DartTypeMerger().merge(
+            entry.value.type,
+            other.type,
+          );
+      } else {
+        fields[entry.key] = entry.value;
+      }
     }
 
     return DartClass(
-      annotations: annotations,
+      annotations: [...a.annotations],
       fields: fields,
     );
   }

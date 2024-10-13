@@ -24,7 +24,7 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
             classes.update(
               event.localName.pascalCase,
               (value) {
-                return value.mergeWith(other);
+                return const DartClassMerger().merge(value, other);
               },
               ifAbsent: () {
                 return other;

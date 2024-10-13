@@ -82,50 +82,8 @@ class XmlToDartStringWriter {
     String name,
     DartField field,
   ) {
-    if (field is XmlAttributeDartField) {
-      final name = field.name;
-      final namespace = field.namespace;
-
-      _sink.write(
-        '@annotation.XmlAttribute(name: \'$name\'',
-      );
-
-      if (namespace != null) {
-        _sink.write(
-          ', namespace: \'$namespace\'',
-        );
-      }
-
-      _sink.writeln(
-        ')',
-      );
-    } else if (field is XmlCDATADartField) {
-      _sink.writeln(
-        '@annotation.XmlCDATA()',
-      );
-    } else if (field is XmlElementDartField) {
-      final name = field.name;
-      final namespace = field.namespace;
-
-      _sink.write(
-        '@annotation.XmlElement(name: \'$name\'',
-      );
-
-      if (namespace != null) {
-        _sink.write(
-          ', namespace: \'$namespace\'',
-        );
-      }
-
-      _sink.writeln(
-        ')',
-      );
-    } else if (field is XmlTextDartField) {
-      _sink.writeln(
-        '@annotation.XmlText()',
-      );
-    } else {
-      throw ArgumentError.value(field, 'field');
+    for (final annotation in field.annotations) {
+      writeDartAnnotation(annotation);
     }
 
     _sink.write(

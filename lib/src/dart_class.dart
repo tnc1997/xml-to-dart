@@ -22,7 +22,7 @@ class DartClass {
 
     for (final attribute in element.attributes) {
       fields[attribute.localName.camelCase] =
-          XmlAttributeDartField.fromXmlAttribute(attribute);
+          DartField.fromXmlAttribute(attribute);
     }
 
     final cdata = StringBuffer();
@@ -30,8 +30,7 @@ class DartClass {
 
     for (final child in element.children) {
       if (child is XmlElement) {
-        fields[child.localName.camelCase] =
-            XmlElementDartField.fromXmlElement(child);
+        fields[child.localName.camelCase] = DartField.fromXmlElement(child);
       } else if (child is XmlCDATA) {
         cdata.write(child.value.trim());
       } else if (child is XmlText) {
@@ -40,12 +39,17 @@ class DartClass {
     }
 
     if (cdata.isNotEmpty) {
-      fields['cdata'] =
-          XmlCDATADartField.fromXmlCDATA(XmlCDATA(cdata.toString()));
+      fields['cdata'] = DartField(
+        annotations: [const XmlCDATADartAnnotation()],
+        type: DartType.fromValue(cdata.toString()),
+      );
     }
 
     if (text.isNotEmpty) {
-      fields['text'] = XmlTextDartField.fromXmlText(XmlText(text.toString()));
+      fields['text'] = DartField(
+        annotations: [const XmlTextDartAnnotation()],
+        type: DartType.fromValue(text.toString()),
+      );
     }
 
     return DartClass(
@@ -69,12 +73,8 @@ class DartClass {
       ],
       fields: {
         for (final attribute in event.attributes)
-          attribute.localName.camelCase: XmlAttributeDartField(
-            type: DartType.fromValue(
-              attribute.value.trim(),
-            ),
-            name: attribute.localName,
-            namespace: attribute.namespaceUri,
+          attribute.localName.camelCase: DartField.fromXmlEventAttribute(
+            attribute,
           ),
       },
     );
@@ -92,11 +92,13 @@ class DartClassMerger {
     for (final entry in a.fields.entries) {
       final other = b.fields[entry.key];
       if (other != null) {
-        fields[entry.key] = entry.value
-          ..type = const DartTypeMerger().merge(
+        fields[entry.key] = DartField(
+          annotations: [...entry.value.annotations],
+          type: const DartTypeMerger().merge(
             entry.value.type,
             other.type,
-          );
+          ),
+        );
       } else {
         fields[entry.key] = entry.value;
       }

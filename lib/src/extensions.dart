@@ -32,24 +32,18 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
             );
 
             if (parent != null) {
-              final other = XmlElementDartField(
-                type: DartType(
-                  name: event.localName.pascalCase,
-                  nullabilitySuffix: NullabilitySuffix.none,
-                ),
-                name: event.localName,
-                namespace: event.namespaceUri,
-                isSelfClosing: event.isSelfClosing,
-              );
+              final other = DartField.fromXmlStartElementEvent(event);
 
               parent.fields.update(
                 event.localName.camelCase,
                 (value) {
-                  return value
-                    ..type = const DartTypeMerger().merge(
+                  return DartField(
+                    annotations: [...value.annotations],
+                    type: const DartTypeMerger().merge(
                       value.type,
                       other.type,
-                    );
+                    ),
+                  );
                 },
                 ifAbsent: () {
                   return other;
@@ -59,20 +53,18 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
           } else if (event is XmlCDATAEvent) {
             if (parent != null) {
               if (event.value.trim().isNotEmpty) {
-                final other = XmlCDATADartField(
-                  type: DartType.fromValue(
-                    event.value.trim(),
-                  ),
-                );
+                final other = DartField.fromXmlCDATAEvent(event);
 
                 parent.fields.update(
                   'cdata',
                   (value) {
-                    return value
-                      ..type = const DartTypeMerger().merge(
+                    return DartField(
+                      annotations: [...value.annotations],
+                      type: const DartTypeMerger().merge(
                         value.type,
                         other.type,
-                      );
+                      ),
+                    );
                   },
                   ifAbsent: () {
                     return other;
@@ -83,20 +75,18 @@ extension ToDartClassListExtension on Stream<List<XmlEvent>> {
           } else if (event is XmlTextEvent) {
             if (parent != null) {
               if (event.value.trim().isNotEmpty) {
-                final other = XmlTextDartField(
-                  type: DartType.fromValue(
-                    event.value.trim(),
-                  ),
-                );
+                final other = DartField.fromXmlTextEvent(event);
 
                 parent.fields.update(
                   'text',
                   (value) {
-                    return value
-                      ..type = const DartTypeMerger().merge(
+                    return DartField(
+                      annotations: [...value.annotations],
+                      type: const DartTypeMerger().merge(
                         value.type,
                         other.type,
-                      );
+                      ),
+                    );
                   },
                   ifAbsent: () {
                     return other;

@@ -32,7 +32,7 @@ class DartClass {
                 name: 'List',
                 nullabilitySuffix: NullabilitySuffix.none,
                 typeArguments: [
-                  const DartTypeMerger().merge(
+                  const DartTypeReducer().combine(
                     value.type.typeArguments.single,
                     other.type.typeArguments.single,
                   ),
@@ -46,7 +46,7 @@ class DartClass {
                 name: 'List',
                 nullabilitySuffix: NullabilitySuffix.none,
                 typeArguments: [
-                  const DartTypeMerger().merge(
+                  const DartTypeReducer().combine(
                     value.type.typeArguments.single,
                     other.type,
                   ),
@@ -60,7 +60,7 @@ class DartClass {
                 name: 'List',
                 nullabilitySuffix: NullabilitySuffix.none,
                 typeArguments: [
-                  const DartTypeMerger().merge(
+                  const DartTypeReducer().combine(
                     value.type,
                     other.type.typeArguments.single,
                   ),
@@ -74,7 +74,7 @@ class DartClass {
                 name: 'List',
                 nullabilitySuffix: NullabilitySuffix.none,
                 typeArguments: [
-                  const DartTypeMerger().merge(
+                  const DartTypeReducer().combine(
                     value.type,
                     other.type,
                   ),
@@ -106,7 +106,7 @@ class DartClass {
                   name: 'List',
                   nullabilitySuffix: NullabilitySuffix.none,
                   typeArguments: [
-                    const DartTypeMerger().merge(
+                    const DartTypeReducer().combine(
                       value.type.typeArguments.single,
                       other.type.typeArguments.single,
                     ),
@@ -120,7 +120,7 @@ class DartClass {
                   name: 'List',
                   nullabilitySuffix: NullabilitySuffix.none,
                   typeArguments: [
-                    const DartTypeMerger().merge(
+                    const DartTypeReducer().combine(
                       value.type.typeArguments.single,
                       other.type,
                     ),
@@ -134,7 +134,7 @@ class DartClass {
                   name: 'List',
                   nullabilitySuffix: NullabilitySuffix.none,
                   typeArguments: [
-                    const DartTypeMerger().merge(
+                    const DartTypeReducer().combine(
                       value.type,
                       other.type.typeArguments.single,
                     ),
@@ -148,7 +148,7 @@ class DartClass {
                   name: 'List',
                   nullabilitySuffix: NullabilitySuffix.none,
                   typeArguments: [
-                    const DartTypeMerger().merge(
+                    const DartTypeReducer().combine(
                       value.type,
                       other.type,
                     ),
@@ -187,11 +187,7 @@ class DartClass {
 }
 
 class DartClassMerger {
-  final DartFieldMerger _dartFieldMerger;
-
-  const DartClassMerger({
-    DartFieldMerger dartFieldMerger = const DartFieldMerger(),
-  }) : _dartFieldMerger = dartFieldMerger;
+  const DartClassMerger();
 
   DartClass merge(
     DartClass a,
@@ -201,7 +197,10 @@ class DartClassMerger {
     for (final entry in a.fields.entries) {
       final other = b.fields[entry.key];
       if (other != null) {
-        fields[entry.key] = _dartFieldMerger.merge(entry.value, other);
+        fields[entry.key] = DartField(
+          annotations: entry.value.annotations.toList(),
+          type: const DartTypeReducer().combine(entry.value.type, other.type),
+        );
       } else {
         fields[entry.key] = entry.value;
       }

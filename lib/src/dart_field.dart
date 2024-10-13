@@ -70,21 +70,3 @@ class DartField {
     );
   }
 }
-
-class DartFieldMerger {
-  final DartTypeMerger _dartTypeMerger;
-
-  const DartFieldMerger({
-    DartTypeMerger dartTypeMerger = const DartTypeMerger(),
-  }) : _dartTypeMerger = dartTypeMerger;
-
-  DartField merge(
-    DartField a,
-    DartField b,
-  ) {
-    return DartField(
-      annotations: a.annotations.toList(),
-      type: _dartTypeMerger.merge(a.type, b.type),
-    );
-  }
-}

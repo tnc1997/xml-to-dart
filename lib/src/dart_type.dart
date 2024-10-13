@@ -72,10 +72,10 @@ enum NullabilitySuffix {
   none,
 }
 
-class DartTypeMerger {
-  const DartTypeMerger();
+class DartTypeReducer {
+  const DartTypeReducer();
 
-  DartType merge(
+  DartType combine(
     DartType a,
     DartType b,
   ) {

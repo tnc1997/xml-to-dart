@@ -1,6 +1,5 @@
 import 'package:recase/recase.dart';
 import 'package:xml/xml.dart';
-import 'package:xml/xml_events.dart';
 
 import 'dart_annotation.dart';
 import 'dart_type.dart';
@@ -42,19 +41,6 @@ class DartField {
     );
   }
 
-  factory DartField.fromXmlCDATAEvent(
-    XmlCDATAEvent event,
-  ) {
-    return DartField(
-      annotations: [
-        const XmlCDATADartAnnotation(),
-      ],
-      type: DartType.fromValue(
-        event.value.trim(),
-      ),
-    );
-  }
-
   factory DartField.fromXmlElement(
     XmlElement element,
   ) {
@@ -71,37 +57,6 @@ class DartField {
     );
   }
 
-  factory DartField.fromXmlEventAttribute(
-    XmlEventAttribute attribute,
-  ) {
-    return DartField(
-      annotations: [
-        XmlAttributeDartAnnotation.fromXmlEventAttribute(
-          attribute,
-        ),
-      ],
-      type: DartType.fromValue(
-        attribute.value.trim(),
-      ),
-    );
-  }
-
-  factory DartField.fromXmlStartElementEvent(
-    XmlStartElementEvent event,
-  ) {
-    return DartField(
-      annotations: [
-        XmlElementDartAnnotation.fromXmlStartElementEvent(
-          event,
-        ),
-      ],
-      type: DartType(
-        name: event.localName.pascalCase,
-        nullabilitySuffix: NullabilitySuffix.none,
-      ),
-    );
-  }
-
   factory DartField.fromXmlText(
     XmlText text,
   ) {
@@ -111,19 +66,6 @@ class DartField {
       ],
       type: DartType.fromValue(
         text.value.trim(),
-      ),
-    );
-  }
-
-  factory DartField.fromXmlTextEvent(
-    XmlTextEvent event,
-  ) {
-    return DartField(
-      annotations: [
-        const XmlTextDartAnnotation(),
-      ],
-      type: DartType.fromValue(
-        event.value.trim(),
       ),
     );
   }

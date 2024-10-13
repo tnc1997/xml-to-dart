@@ -1,5 +1,4 @@
 import 'package:xml/xml.dart';
-import 'package:xml/xml_events.dart';
 
 abstract class DartAnnotation {
   const DartAnnotation();
@@ -16,15 +15,6 @@ class XmlAttributeDartAnnotation extends DartAnnotation {
 
   factory XmlAttributeDartAnnotation.fromXmlAttribute(
     XmlAttribute attribute,
-  ) {
-    return XmlAttributeDartAnnotation(
-      name: attribute.localName,
-      namespace: attribute.namespaceUri,
-    );
-  }
-
-  factory XmlAttributeDartAnnotation.fromXmlEventAttribute(
-    XmlEventAttribute attribute,
   ) {
     return XmlAttributeDartAnnotation(
       name: attribute.localName,
@@ -59,16 +49,6 @@ class XmlElementDartAnnotation extends DartAnnotation {
       isSelfClosing: element.isSelfClosing,
     );
   }
-
-  factory XmlElementDartAnnotation.fromXmlStartElementEvent(
-    XmlStartElementEvent event,
-  ) {
-    return XmlElementDartAnnotation(
-      name: event.localName,
-      namespace: event.namespaceUri,
-      isSelfClosing: event.isSelfClosing,
-    );
-  }
 }
 
 class XmlRootElementDartAnnotation extends DartAnnotation {
@@ -89,16 +69,6 @@ class XmlRootElementDartAnnotation extends DartAnnotation {
       name: element.localName,
       namespace: element.namespaceUri,
       isSelfClosing: element.isSelfClosing,
-    );
-  }
-
-  factory XmlRootElementDartAnnotation.fromXmlStartElementEvent(
-    XmlStartElementEvent event,
-  ) {
-    return XmlRootElementDartAnnotation(
-      name: event.localName,
-      namespace: event.namespaceUri,
-      isSelfClosing: event.isSelfClosing,
     );
   }
 }

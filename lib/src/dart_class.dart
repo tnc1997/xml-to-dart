@@ -1,6 +1,5 @@
 import 'package:recase/recase.dart';
 import 'package:xml/xml.dart';
-import 'package:xml/xml_events.dart';
 
 import 'dart_annotation.dart';
 import 'dart_field.dart';
@@ -58,25 +57,6 @@ class DartClass {
         const XmlSerializableDartAnnotation(),
       ],
       fields: fields,
-    );
-  }
-
-  factory DartClass.fromXmlStartElementEvent(
-    XmlStartElementEvent event,
-  ) {
-    return DartClass(
-      annotations: [
-        XmlRootElementDartAnnotation.fromXmlStartElementEvent(
-          event,
-        ),
-        const XmlSerializableDartAnnotation(),
-      ],
-      fields: {
-        for (final attribute in event.attributes)
-          attribute.localName.camelCase: DartField.fromXmlEventAttribute(
-            attribute,
-          ),
-      },
     );
   }
 }

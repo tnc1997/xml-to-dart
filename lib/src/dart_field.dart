@@ -127,24 +127,22 @@ class DartField {
       ),
     );
   }
+}
 
-  DartField copyWith({
-    String? name,
-    List<DartAnnotation>? annotations,
-    DartType? type,
-  }) {
-    return DartField(
-      annotations: annotations ?? this.annotations,
-      type: type ?? this.type,
-    );
-  }
+class DartFieldMerger {
+  final DartTypeMerger _dartTypeMerger;
 
-  DartField mergeWith(
-    DartField other,
+  const DartFieldMerger({
+    DartTypeMerger dartTypeMerger = const DartTypeMerger(),
+  }) : _dartTypeMerger = dartTypeMerger;
+
+  DartField merge(
+    DartField a,
+    DartField b,
   ) {
     return DartField(
-      annotations: annotations,
-      type: const DartTypeMerger().merge(type, other.type),
+      annotations: [...a.annotations],
+      type: _dartTypeMerger.merge(a.type, b.type),
     );
   }
 }

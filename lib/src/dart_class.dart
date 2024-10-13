@@ -82,7 +82,11 @@ class DartClass {
 }
 
 class DartClassMerger {
-  const DartClassMerger();
+  final DartFieldMerger _dartFieldMerger;
+
+  const DartClassMerger({
+    DartFieldMerger dartFieldMerger = const DartFieldMerger(),
+  }) : _dartFieldMerger = dartFieldMerger;
 
   DartClass merge(
     DartClass a,
@@ -92,13 +96,7 @@ class DartClassMerger {
     for (final entry in a.fields.entries) {
       final other = b.fields[entry.key];
       if (other != null) {
-        fields[entry.key] = DartField(
-          annotations: [...entry.value.annotations],
-          type: const DartTypeMerger().merge(
-            entry.value.type,
-            other.type,
-          ),
-        );
+        fields[entry.key] = _dartFieldMerger.merge(entry.value, other);
       } else {
         fields[entry.key] = entry.value;
       }

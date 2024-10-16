@@ -185,30 +185,3 @@ class DartClass {
     );
   }
 }
-
-class DartClassMerger {
-  const DartClassMerger();
-
-  DartClass merge(
-    DartClass a,
-    DartClass b,
-  ) {
-    final fields = <String, DartField>{};
-    for (final entry in a.fields.entries) {
-      final other = b.fields[entry.key];
-      if (other != null) {
-        fields[entry.key] = DartField(
-          annotations: entry.value.annotations.toList(),
-          type: const DartTypeReducer().combine(entry.value.type, other.type),
-        );
-      } else {
-        fields[entry.key] = entry.value;
-      }
-    }
-
-    return DartClass(
-      annotations: a.annotations.toList(),
-      fields: fields,
-    );
-  }
-}

@@ -71,7 +71,26 @@ Future<void> main(
         classes.update(
           element.localName.pascalCase,
           (value) {
-            return const DartClassMerger().merge(value, other);
+            final fields = <String, DartField>{};
+            for (final entry in value.fields.entries) {
+              final field = other.fields[entry.key];
+              if (field != null) {
+                fields[entry.key] = DartField(
+                  annotations: entry.value.annotations.toList(),
+                  type: const DartTypeReducer().combine(
+                    entry.value.type,
+                    field.type,
+                  ),
+                );
+              } else {
+                fields[entry.key] = entry.value;
+              }
+            }
+
+            return DartClass(
+              annotations: value.annotations.toList(),
+              fields: fields,
+            );
           },
           ifAbsent: () {
             return other;

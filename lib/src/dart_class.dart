@@ -2,6 +2,7 @@ import 'package:xml/xml.dart';
 
 import 'dart_annotation.dart';
 import 'dart_field.dart';
+import 'dart_field_factory.dart';
 import 'dart_type.dart';
 import 'dart_type_reducer.dart';
 import 'nullability_suffix.dart';
@@ -21,7 +22,7 @@ class DartClass {
     final fields = <String, DartField>{};
 
     for (final attribute in element.attributes) {
-      final other = DartField.fromXmlAttribute(attribute);
+      final other = const DartFieldFactory().create(attribute);
 
       fields.update(
         other.name,
@@ -99,7 +100,7 @@ class DartClass {
 
     for (final child in element.children) {
       if (child is XmlElement) {
-        final other = DartField.fromXmlElement(child);
+        final other = const DartFieldFactory().create(child);
 
         fields.update(
           other.name,
@@ -178,11 +179,11 @@ class DartClass {
     }
 
     if (cdata.isNotEmpty) {
-      fields['cdata'] = DartField.fromXmlCDATA(XmlCDATA('$cdata'));
+      fields['cdata'] = const DartFieldFactory().create(XmlCDATA('$cdata'));
     }
 
     if (text.isNotEmpty) {
-      fields['text'] = DartField.fromXmlText(XmlText('$text'));
+      fields['text'] = const DartFieldFactory().create(XmlText('$text'));
     }
 
     return DartClass(

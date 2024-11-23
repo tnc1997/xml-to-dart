@@ -106,11 +106,11 @@ Future<void> main(
     }
   }
 
-  for (final entry in classes.entries) {
+  for (final class_ in classes.values) {
     final file = File(
       join(
         results.option('output') ?? Directory.current.path,
-        '${entry.key.snakeCase}.dart',
+        '${class_.name.snakeCase}.dart',
       ),
     );
 
@@ -121,9 +121,9 @@ Future<void> main(
     writer.writeXmlImportDirective();
     writer.writeXmlAnnotationImportDirective();
 
-    writer.writePartDirective(entry.key);
+    writer.writePartDirective(class_);
 
-    writer.writeDartClass(entry.key, entry.value);
+    writer.writeDartClass(class_);
 
     await sink.close();
   }

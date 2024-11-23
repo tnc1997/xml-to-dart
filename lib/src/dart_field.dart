@@ -3,6 +3,7 @@ import 'package:xml/xml.dart';
 
 import 'dart_annotation.dart';
 import 'dart_type.dart';
+import 'dart_type_factory.dart';
 import 'nullability_suffix.dart';
 
 class DartField {
@@ -23,7 +24,7 @@ class DartField {
           attribute,
         ),
       ],
-      type: DartType.fromValue(
+      type: const DartTypeFactory().create(
         attribute.value.trim(),
       ),
     );
@@ -36,7 +37,7 @@ class DartField {
       annotations: [
         const XmlCDATADartAnnotation(),
       ],
-      type: DartType.fromValue(
+      type: const DartTypeFactory().create(
         cdata.value.trim(),
       ),
     );
@@ -65,7 +66,7 @@ class DartField {
       annotations: [
         const XmlTextDartAnnotation(),
       ],
-      type: DartType.fromValue(
+      type: const DartTypeFactory().create(
         text.value.trim(),
       ),
     );

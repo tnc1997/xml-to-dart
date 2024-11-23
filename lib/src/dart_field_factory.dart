@@ -3,9 +3,7 @@ import 'package:xml/xml.dart';
 
 import 'dart_annotation.dart';
 import 'dart_field.dart';
-import 'dart_type.dart';
 import 'dart_type_factory.dart';
-import 'nullability_suffix.dart';
 
 class DartFieldFactory {
   final DartTypeFactory typeFactory;
@@ -23,7 +21,7 @@ class DartFieldFactory {
         annotations: [
           XmlAttributeDartAnnotation.fromXmlAttribute(node),
         ],
-        type: typeFactory.create(node.value.trim()),
+        type: typeFactory.create(node),
       );
     } else if (node is XmlCDATA) {
       return DartField(
@@ -31,7 +29,7 @@ class DartFieldFactory {
         annotations: [
           const XmlCDATADartAnnotation(),
         ],
-        type: typeFactory.create(node.value.trim()),
+        type: typeFactory.create(node),
       );
     } else if (node is XmlElement) {
       return DartField(
@@ -39,10 +37,7 @@ class DartFieldFactory {
         annotations: [
           XmlElementDartAnnotation.fromXmlElement(node),
         ],
-        type: DartType(
-          name: node.localName.pascalCase,
-          nullabilitySuffix: NullabilitySuffix.none,
-        ),
+        type: typeFactory.create(node),
       );
     } else if (node is XmlText) {
       return DartField(
@@ -50,7 +45,7 @@ class DartFieldFactory {
         annotations: [
           const XmlTextDartAnnotation(),
         ],
-        type: typeFactory.create(node.value.trim()),
+        type: typeFactory.create(node),
       );
     } else {
       throw ArgumentError.value(node, 'node');

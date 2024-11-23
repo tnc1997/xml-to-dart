@@ -3,7 +3,7 @@ import 'package:recase/recase.dart';
 import 'dart_annotation.dart';
 import 'dart_class.dart';
 import 'dart_field.dart';
-import 'dart_type.dart';
+import 'nullability_suffix.dart';
 
 class XmlToDartStringWriter {
   final StringSink _sink;

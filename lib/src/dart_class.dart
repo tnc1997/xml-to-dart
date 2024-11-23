@@ -4,6 +4,8 @@ import 'package:xml/xml.dart';
 import 'dart_annotation.dart';
 import 'dart_field.dart';
 import 'dart_type.dart';
+import 'dart_type_reducer.dart';
+import 'nullability_suffix.dart';
 
 class DartClass {
   final List<DartAnnotation> annotations;

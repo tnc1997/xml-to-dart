@@ -3,6 +3,7 @@ import 'package:xml/xml.dart';
 
 import 'dart_annotation.dart';
 import 'dart_type.dart';
+import 'nullability_suffix.dart';
 
 class DartField {
   final List<DartAnnotation> annotations;

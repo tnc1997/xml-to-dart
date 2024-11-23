@@ -1,3 +1,5 @@
+import 'nullability_suffix.dart';
+
 class DartType {
   final String name;
   final NullabilitySuffix nullabilitySuffix;
@@ -58,61 +60,5 @@ class DartType {
     }
 
     return buffer.toString();
-  }
-}
-
-/// Suffix indicating the nullability of a type.
-///
-/// This enum describes whether a `?` would be used at the end of the canonical representation of a type. It's subtly different the notions of "nullable" and "non-nullable" defined by the spec. For example, the type `Null` is nullable, even though it lacks a trailing `?`.
-enum NullabilitySuffix {
-  /// An indication that the canonical representation of the type under consideration ends with `?`. Types having this nullability suffix should be interpreted as being unioned with the Null type.
-  question,
-
-  /// An indication that the canonical representation of the type under consideration does not end with `?`.
-  none,
-}
-
-class DartTypeReducer {
-  const DartTypeReducer();
-
-  DartType combine(
-    DartType a,
-    DartType b,
-  ) {
-    final String name;
-    if (a.name == b.name) {
-      name = a.name;
-    } else if (a.name == 'List' || b.name == 'List') {
-      name = 'List';
-    } else {
-      name = 'String';
-    }
-
-    final NullabilitySuffix nullabilitySuffix;
-    if (a.nullabilitySuffix == b.nullabilitySuffix) {
-      nullabilitySuffix = a.nullabilitySuffix;
-    } else if (a.nullabilitySuffix == NullabilitySuffix.question) {
-      nullabilitySuffix = NullabilitySuffix.question;
-    } else if (b.nullabilitySuffix == NullabilitySuffix.question) {
-      nullabilitySuffix = NullabilitySuffix.question;
-    } else {
-      nullabilitySuffix = NullabilitySuffix.none;
-    }
-
-    final typeArguments = <DartType>[];
-    if (a.name == 'List' || b.name == 'List') {
-      typeArguments.add(
-        combine(
-          a.name == 'List' ? a.typeArguments.single : a,
-          b.name == 'List' ? b.typeArguments.single : b,
-        ),
-      );
-    }
-
-    return DartType(
-      name: name,
-      nullabilitySuffix: nullabilitySuffix,
-      typeArguments: typeArguments,
-    );
   }
 }

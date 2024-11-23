@@ -1,4 +1,3 @@
-import 'package:recase/recase.dart';
 import 'package:xml/xml.dart';
 
 import 'dart_annotation.dart';
@@ -25,10 +24,11 @@ class DartClass {
       final other = DartField.fromXmlAttribute(attribute);
 
       fields.update(
-        attribute.localName.camelCase,
+        other.name,
         (value) {
           if (value.type.name == 'List' && other.type.name == 'List') {
             return DartField(
+              name: value.name,
               annotations: value.annotations.toList(),
               type: DartType(
                 name: 'List',
@@ -43,6 +43,7 @@ class DartClass {
             );
           } else if (value.type.name == 'List') {
             return DartField(
+              name: value.name,
               annotations: value.annotations.toList(),
               type: DartType(
                 name: 'List',
@@ -57,6 +58,7 @@ class DartClass {
             );
           } else if (other.type.name == 'List') {
             return DartField(
+              name: value.name,
               annotations: value.annotations.toList(),
               type: DartType(
                 name: 'List',
@@ -71,6 +73,7 @@ class DartClass {
             );
           } else {
             return DartField(
+              name: value.name,
               annotations: value.annotations.toList(),
               type: DartType(
                 name: 'List',
@@ -99,10 +102,11 @@ class DartClass {
         final other = DartField.fromXmlElement(child);
 
         fields.update(
-          child.localName.camelCase,
+          other.name,
           (value) {
             if (value.type.name == 'List' && other.type.name == 'List') {
               return DartField(
+                name: value.name,
                 annotations: value.annotations.toList(),
                 type: DartType(
                   name: 'List',
@@ -117,6 +121,7 @@ class DartClass {
               );
             } else if (value.type.name == 'List') {
               return DartField(
+                name: value.name,
                 annotations: value.annotations.toList(),
                 type: DartType(
                   name: 'List',
@@ -131,6 +136,7 @@ class DartClass {
               );
             } else if (other.type.name == 'List') {
               return DartField(
+                name: value.name,
                 annotations: value.annotations.toList(),
                 type: DartType(
                   name: 'List',
@@ -145,6 +151,7 @@ class DartClass {
               );
             } else {
               return DartField(
+                name: value.name,
                 annotations: value.annotations.toList(),
                 type: DartType(
                   name: 'List',

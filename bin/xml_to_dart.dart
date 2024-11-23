@@ -76,6 +76,7 @@ Future<void> main(
               final field = other.fields[entry.key];
               if (field != null) {
                 fields[entry.key] = DartField(
+                  name: entry.value.name,
                   annotations: entry.value.annotations.toList(),
                   type: const DartTypeReducer().combine(
                     entry.value.type,

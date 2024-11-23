@@ -7,10 +7,12 @@ import 'dart_type_factory.dart';
 import 'nullability_suffix.dart';
 
 class DartField {
+  final String name;
   final List<DartAnnotation> annotations;
   final DartType type;
 
   const DartField({
+    required this.name,
     required this.annotations,
     required this.type,
   });
@@ -19,6 +21,7 @@ class DartField {
     XmlAttribute attribute,
   ) {
     return DartField(
+      name: attribute.localName.camelCase,
       annotations: [
         XmlAttributeDartAnnotation.fromXmlAttribute(
           attribute,
@@ -34,6 +37,7 @@ class DartField {
     XmlCDATA cdata,
   ) {
     return DartField(
+      name: 'cdata',
       annotations: [
         const XmlCDATADartAnnotation(),
       ],
@@ -47,6 +51,7 @@ class DartField {
     XmlElement element,
   ) {
     return DartField(
+      name: element.localName.camelCase,
       annotations: [
         XmlElementDartAnnotation.fromXmlElement(
           element,
@@ -63,6 +68,7 @@ class DartField {
     XmlText text,
   ) {
     return DartField(
+      name: 'cdata',
       annotations: [
         const XmlTextDartAnnotation(),
       ],

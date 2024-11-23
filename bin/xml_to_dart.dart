@@ -89,6 +89,7 @@ Future<void> main(
             }
 
             return DartClass(
+              name: element.localName.pascalCase,
               annotations: value.annotations.toList(),
               fields: fields,
             );

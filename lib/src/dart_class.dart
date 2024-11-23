@@ -1,3 +1,4 @@
+import 'package:recase/recase.dart';
 import 'package:xml/xml.dart';
 
 import 'dart_annotation.dart';
@@ -8,10 +9,12 @@ import 'dart_type_reducer.dart';
 import 'nullability_suffix.dart';
 
 class DartClass {
+  final String name;
   final List<DartAnnotation> annotations;
   final Map<String, DartField> fields;
 
   const DartClass({
+    required this.name,
     required this.annotations,
     required this.fields,
   });
@@ -187,6 +190,7 @@ class DartClass {
     }
 
     return DartClass(
+      name: element.localName.pascalCase,
       annotations: [
         XmlRootElementDartAnnotation.fromXmlElement(element),
         const XmlSerializableDartAnnotation(),

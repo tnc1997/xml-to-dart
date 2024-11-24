@@ -1,13 +1,21 @@
 import 'dart_class.dart';
 import 'dart_field_reducer.dart';
 
-class DartClassReducer {
+abstract class DartClassReducer {
+  DartClass combine(
+    DartClass a,
+    DartClass b,
+  );
+}
+
+class XmlToDartDartClassReducer implements DartClassReducer {
   final DartFieldReducer fieldReducer;
 
-  const DartClassReducer({
-    this.fieldReducer = const DartFieldReducer(),
+  const XmlToDartDartClassReducer({
+    this.fieldReducer = const XmlToDartDartFieldReducer(),
   });
 
+  @override
   DartClass combine(
     DartClass a,
     DartClass b,

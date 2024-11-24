@@ -71,7 +71,7 @@ Future<void> main(
         classes.update(
           element.localName.pascalCase,
           (value) {
-            return const DartClassReducer().combine(value, other);
+            return const XmlToDartDartClassReducer().combine(value, other);
           },
           ifAbsent: () {
             return other;

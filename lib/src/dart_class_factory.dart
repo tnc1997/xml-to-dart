@@ -21,7 +21,7 @@ class XmlToDartDartClassFactory implements DartClassFactory {
   const XmlToDartDartClassFactory({
     this.annotationsFactory = const XmlToDartDartClassDartAnnotationsFactory(),
     this.fieldFactory = const XmlToDartDartFieldFactory(),
-    this.fieldReducer = const DartFieldReducer(),
+    this.fieldReducer = const XmlToDartDartFieldReducer(),
   });
 
   @override

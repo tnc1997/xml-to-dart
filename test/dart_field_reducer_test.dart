@@ -37,7 +37,7 @@ void main() {
               );
 
               // Act
-              final field = const DartFieldReducer().combine(a, b);
+              final field = const XmlToDartDartFieldReducer().combine(a, b);
 
               // Assert
               expect(
@@ -81,7 +81,7 @@ void main() {
               );
 
               // Act
-              final field = const DartFieldReducer().combine(a, b);
+              final field = const XmlToDartDartFieldReducer().combine(a, b);
 
               // Assert
               expect(
@@ -120,7 +120,7 @@ void main() {
               );
 
               // Act
-              final field = const DartFieldReducer().combine(a, b);
+              final field = const XmlToDartDartFieldReducer().combine(a, b);
 
               // Assert
               expect(
@@ -164,7 +164,7 @@ void main() {
               );
 
               // Act
-              final field = const DartFieldReducer().combine(a, b);
+              final field = const XmlToDartDartFieldReducer().combine(a, b);
 
               // Assert
               expect(

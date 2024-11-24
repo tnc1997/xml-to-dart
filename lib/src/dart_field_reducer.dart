@@ -3,13 +3,21 @@ import 'dart_type.dart';
 import 'dart_type_reducer.dart';
 import 'nullability_suffix.dart';
 
-class DartFieldReducer {
+abstract class DartFieldReducer {
+  DartField combine(
+    DartField a,
+    DartField b,
+  );
+}
+
+class XmlToDartDartFieldReducer implements DartFieldReducer {
   final DartTypeReducer typeReducer;
 
-  const DartFieldReducer({
+  const XmlToDartDartFieldReducer({
     this.typeReducer = const DartTypeReducer(),
   });
 
+  @override
   DartField combine(
     DartField a,
     DartField b,

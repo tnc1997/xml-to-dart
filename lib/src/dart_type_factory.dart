@@ -16,7 +16,6 @@ class DartTypeFactory {
     }
 
     final String value;
-
     if (node is XmlAttribute) {
       value = node.value;
     } else if (node is XmlCDATA) {

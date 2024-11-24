@@ -66,7 +66,7 @@ Future<void> main(
       while (elements.isNotEmpty) {
         final element = elements.removeAt(0);
 
-        final other = const DartClassFactory().create(element);
+        final other = const XmlToDartDartClassFactory().create(element);
 
         classes.update(
           element.localName.pascalCase,

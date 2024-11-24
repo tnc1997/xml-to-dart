@@ -7,17 +7,24 @@ import 'dart_field.dart';
 import 'dart_field_factory.dart';
 import 'dart_field_reducer.dart';
 
-class DartClassFactory {
+abstract class DartClassFactory {
+  DartClass create(
+    XmlNode node,
+  );
+}
+
+class XmlToDartDartClassFactory implements DartClassFactory {
   final DartAnnotationsFactory annotationsFactory;
   final DartFieldFactory fieldFactory;
   final DartFieldReducer fieldReducer;
 
-  const DartClassFactory({
-    this.annotationsFactory = const DartClassDartAnnotationsFactory(),
-    this.fieldFactory = const DartFieldFactory(),
+  const XmlToDartDartClassFactory({
+    this.annotationsFactory = const XmlToDartDartClassDartAnnotationsFactory(),
+    this.fieldFactory = const XmlToDartDartFieldFactory(),
     this.fieldReducer = const DartFieldReducer(),
   });
 
+  @override
   DartClass create(
     XmlNode node,
   ) {

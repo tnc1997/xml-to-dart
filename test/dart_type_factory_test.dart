@@ -16,7 +16,7 @@ void main() {
               final node = XmlText('false');
 
               // Act
-              final type = const DartTypeFactory().create(node);
+              final type = const XmlToDartDartTypeFactory().create(node);
 
               // Assert
               expect(
@@ -33,7 +33,7 @@ void main() {
               final node = XmlText('true');
 
               // Act
-              final type = const DartTypeFactory().create(node);
+              final type = const XmlToDartDartTypeFactory().create(node);
 
               // Assert
               expect(
@@ -50,7 +50,7 @@ void main() {
               final node = XmlText('1970-01-01');
 
               // Act
-              final type = const DartTypeFactory().create(node);
+              final type = const XmlToDartDartTypeFactory().create(node);
 
               // Assert
               expect(
@@ -67,7 +67,7 @@ void main() {
               final node = XmlText('0.0');
 
               // Act
-              final type = const DartTypeFactory().create(node);
+              final type = const XmlToDartDartTypeFactory().create(node);
 
               // Assert
               expect(
@@ -84,7 +84,7 @@ void main() {
               final node = XmlText('0');
 
               // Act
-              final type = const DartTypeFactory().create(node);
+              final type = const XmlToDartDartTypeFactory().create(node);
 
               // Assert
               expect(
@@ -101,7 +101,7 @@ void main() {
               final node = XmlText('Hello World');
 
               // Act
-              final type = const DartTypeFactory().create(node);
+              final type = const XmlToDartDartTypeFactory().create(node);
 
               // Assert
               expect(

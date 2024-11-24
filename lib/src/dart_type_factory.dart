@@ -3,9 +3,16 @@ import 'package:xml/xml.dart';
 
 import 'dart_type.dart';
 
-class DartTypeFactory {
-  const DartTypeFactory();
+abstract class DartTypeFactory {
+  DartType create(
+    XmlNode node,
+  );
+}
 
+class XmlToDartDartTypeFactory implements DartTypeFactory {
+  const XmlToDartDartTypeFactory();
+
+  @override
   DartType create(
     XmlNode node,
   ) {

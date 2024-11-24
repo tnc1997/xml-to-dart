@@ -8,8 +8,9 @@ abstract class DartAnnotationsFactory {
   );
 }
 
-class DartClassDartAnnotationsFactory implements DartAnnotationsFactory {
-  const DartClassDartAnnotationsFactory();
+class XmlToDartDartClassDartAnnotationsFactory
+    implements DartAnnotationsFactory {
+  const XmlToDartDartClassDartAnnotationsFactory();
 
   @override
   List<DartAnnotation> create(
@@ -30,8 +31,9 @@ class DartClassDartAnnotationsFactory implements DartAnnotationsFactory {
   }
 }
 
-class DartFieldDartAnnotationsFactory implements DartAnnotationsFactory {
-  const DartFieldDartAnnotationsFactory();
+class XmlToDartDartFieldDartAnnotationsFactory
+    implements DartAnnotationsFactory {
+  const XmlToDartDartFieldDartAnnotationsFactory();
 
   @override
   List<DartAnnotation> create(

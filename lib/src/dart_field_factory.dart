@@ -5,15 +5,22 @@ import 'dart_annotations_factory.dart';
 import 'dart_field.dart';
 import 'dart_type_factory.dart';
 
-class DartFieldFactory {
+abstract class DartFieldFactory {
+  DartField create(
+    XmlNode node,
+  );
+}
+
+class XmlToDartDartFieldFactory implements DartFieldFactory {
   final DartTypeFactory typeFactory;
   final DartAnnotationsFactory annotationsFactory;
 
-  const DartFieldFactory({
-    this.typeFactory = const DartTypeFactory(),
-    this.annotationsFactory = const DartFieldDartAnnotationsFactory(),
+  const XmlToDartDartFieldFactory({
+    this.typeFactory = const XmlToDartDartTypeFactory(),
+    this.annotationsFactory = const XmlToDartDartFieldDartAnnotationsFactory(),
   });
 
+  @override
   DartField create(
     XmlNode node,
   ) {

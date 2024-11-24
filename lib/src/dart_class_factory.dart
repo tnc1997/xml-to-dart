@@ -23,20 +23,22 @@ class DartClassFactory {
       throw ArgumentError.value(node, 'node');
     }
 
-    final fields = <String, DartField>{};
+    final fields = <DartField>[];
 
     for (final attribute in node.attributes) {
       final other = fieldFactory.create(attribute);
 
-      fields.update(
-        other.name,
-        (value) {
-          return fieldReducer.combine(value, other);
-        },
-        ifAbsent: () {
-          return other;
+      final index = fields.indexWhere(
+        (element) {
+          return element.name == other.name;
         },
       );
+
+      if (index >= 0) {
+        fields[index] = fieldReducer.combine(fields[index], other);
+      } else {
+        fields.add(other);
+      }
     }
 
     final cdata = StringBuffer();
@@ -46,15 +48,17 @@ class DartClassFactory {
       if (child is XmlElement) {
         final other = fieldFactory.create(child);
 
-        fields.update(
-          other.name,
-          (value) {
-            return fieldReducer.combine(value, other);
-          },
-          ifAbsent: () {
-            return other;
+        final index = fields.indexWhere(
+          (element) {
+            return element.name == other.name;
           },
         );
+
+        if (index >= 0) {
+          fields[index] = fieldReducer.combine(fields[index], other);
+        } else {
+          fields.add(other);
+        }
       } else if (child is XmlCDATA) {
         cdata.write(child.value.trim());
       } else if (child is XmlText) {
@@ -63,11 +67,11 @@ class DartClassFactory {
     }
 
     if (cdata.isNotEmpty) {
-      fields['cdata'] = fieldFactory.create(XmlCDATA('$cdata'));
+      fields.add(fieldFactory.create(XmlCDATA('$cdata')));
     }
 
     if (text.isNotEmpty) {
-      fields['text'] = fieldFactory.create(XmlText('$text'));
+      fields.add(fieldFactory.create(XmlText('$text')));
     }
 
     return DartClass(

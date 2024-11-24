@@ -1,4 +1,5 @@
 export 'src/dart_annotation.dart';
+export 'src/dart_annotations_factory.dart';
 export 'src/dart_class.dart';
 export 'src/dart_class_factory.dart';
 export 'src/dart_class_reducer.dart';

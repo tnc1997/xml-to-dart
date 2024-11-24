@@ -1,5 +1,3 @@
-import 'package:xml/xml.dart';
-
 abstract class DartAnnotation {
   const DartAnnotation();
 }
@@ -12,15 +10,6 @@ class XmlAttributeDartAnnotation extends DartAnnotation {
     this.name,
     this.namespace,
   });
-
-  factory XmlAttributeDartAnnotation.fromXmlAttribute(
-    XmlAttribute attribute,
-  ) {
-    return XmlAttributeDartAnnotation(
-      name: attribute.localName,
-      namespace: attribute.namespaceUri,
-    );
-  }
 }
 
 class XmlCDATADartAnnotation extends DartAnnotation {
@@ -39,16 +28,6 @@ class XmlElementDartAnnotation extends DartAnnotation {
     this.isSelfClosing,
     this.includeIfNull,
   });
-
-  factory XmlElementDartAnnotation.fromXmlElement(
-    XmlElement element,
-  ) {
-    return XmlElementDartAnnotation(
-      name: element.localName,
-      namespace: element.namespaceUri,
-      isSelfClosing: element.isSelfClosing,
-    );
-  }
 }
 
 class XmlRootElementDartAnnotation extends DartAnnotation {
@@ -61,16 +40,6 @@ class XmlRootElementDartAnnotation extends DartAnnotation {
     this.namespace,
     this.isSelfClosing,
   });
-
-  factory XmlRootElementDartAnnotation.fromXmlElement(
-    XmlElement element,
-  ) {
-    return XmlRootElementDartAnnotation(
-      name: element.localName,
-      namespace: element.namespaceUri,
-      isSelfClosing: element.isSelfClosing,
-    );
-  }
 }
 
 class XmlSerializableDartAnnotation extends DartAnnotation {

@@ -1,17 +1,19 @@
 import 'package:recase/recase.dart';
 import 'package:xml/xml.dart';
 
-import 'dart_annotation.dart';
+import 'dart_annotations_factory.dart';
 import 'dart_class.dart';
 import 'dart_field.dart';
 import 'dart_field_factory.dart';
 import 'dart_field_reducer.dart';
 
 class DartClassFactory {
+  final DartAnnotationsFactory annotationsFactory;
   final DartFieldFactory fieldFactory;
   final DartFieldReducer fieldReducer;
 
   const DartClassFactory({
+    this.annotationsFactory = const DartClassDartAnnotationsFactory(),
     this.fieldFactory = const DartFieldFactory(),
     this.fieldReducer = const DartFieldReducer(),
   });
@@ -76,10 +78,7 @@ class DartClassFactory {
 
     return DartClass(
       name: node.localName.pascalCase,
-      annotations: [
-        XmlRootElementDartAnnotation.fromXmlElement(node),
-        const XmlSerializableDartAnnotation(),
-      ],
+      annotations: annotationsFactory.create(node),
       fields: fields,
     );
   }

@@ -5,17 +5,15 @@ import 'dart_annotation.dart';
 import 'dart_class.dart';
 import 'dart_field.dart';
 import 'dart_field_factory.dart';
-import 'dart_type.dart';
-import 'dart_type_reducer.dart';
-import 'nullability_suffix.dart';
+import 'dart_field_reducer.dart';
 
 class DartClassFactory {
   final DartFieldFactory fieldFactory;
-  final DartTypeReducer typeReducer;
+  final DartFieldReducer fieldReducer;
 
   const DartClassFactory({
     this.fieldFactory = const DartFieldFactory(),
-    this.typeReducer = const DartTypeReducer(),
+    this.fieldReducer = const DartFieldReducer(),
   });
 
   DartClass create(
@@ -33,67 +31,7 @@ class DartClassFactory {
       fields.update(
         other.name,
         (value) {
-          if (value.type.name == 'List' && other.type.name == 'List') {
-            return DartField(
-              name: value.name,
-              annotations: value.annotations.toList(),
-              type: DartType(
-                name: 'List',
-                nullabilitySuffix: NullabilitySuffix.none,
-                typeArguments: [
-                  typeReducer.combine(
-                    value.type.typeArguments.single,
-                    other.type.typeArguments.single,
-                  ),
-                ],
-              ),
-            );
-          } else if (value.type.name == 'List') {
-            return DartField(
-              name: value.name,
-              annotations: value.annotations.toList(),
-              type: DartType(
-                name: 'List',
-                nullabilitySuffix: NullabilitySuffix.none,
-                typeArguments: [
-                  typeReducer.combine(
-                    value.type.typeArguments.single,
-                    other.type,
-                  ),
-                ],
-              ),
-            );
-          } else if (other.type.name == 'List') {
-            return DartField(
-              name: value.name,
-              annotations: value.annotations.toList(),
-              type: DartType(
-                name: 'List',
-                nullabilitySuffix: NullabilitySuffix.none,
-                typeArguments: [
-                  typeReducer.combine(
-                    value.type,
-                    other.type.typeArguments.single,
-                  ),
-                ],
-              ),
-            );
-          } else {
-            return DartField(
-              name: value.name,
-              annotations: value.annotations.toList(),
-              type: DartType(
-                name: 'List',
-                nullabilitySuffix: NullabilitySuffix.none,
-                typeArguments: [
-                  typeReducer.combine(
-                    value.type,
-                    other.type,
-                  ),
-                ],
-              ),
-            );
-          }
+          return fieldReducer.combine(value, other);
         },
         ifAbsent: () {
           return other;
@@ -111,67 +49,7 @@ class DartClassFactory {
         fields.update(
           other.name,
           (value) {
-            if (value.type.name == 'List' && other.type.name == 'List') {
-              return DartField(
-                name: value.name,
-                annotations: value.annotations.toList(),
-                type: DartType(
-                  name: 'List',
-                  nullabilitySuffix: NullabilitySuffix.none,
-                  typeArguments: [
-                    typeReducer.combine(
-                      value.type.typeArguments.single,
-                      other.type.typeArguments.single,
-                    ),
-                  ],
-                ),
-              );
-            } else if (value.type.name == 'List') {
-              return DartField(
-                name: value.name,
-                annotations: value.annotations.toList(),
-                type: DartType(
-                  name: 'List',
-                  nullabilitySuffix: NullabilitySuffix.none,
-                  typeArguments: [
-                    typeReducer.combine(
-                      value.type.typeArguments.single,
-                      other.type,
-                    ),
-                  ],
-                ),
-              );
-            } else if (other.type.name == 'List') {
-              return DartField(
-                name: value.name,
-                annotations: value.annotations.toList(),
-                type: DartType(
-                  name: 'List',
-                  nullabilitySuffix: NullabilitySuffix.none,
-                  typeArguments: [
-                    typeReducer.combine(
-                      value.type,
-                      other.type.typeArguments.single,
-                    ),
-                  ],
-                ),
-              );
-            } else {
-              return DartField(
-                name: value.name,
-                annotations: value.annotations.toList(),
-                type: DartType(
-                  name: 'List',
-                  nullabilitySuffix: NullabilitySuffix.none,
-                  typeArguments: [
-                    typeReducer.combine(
-                      value.type,
-                      other.type,
-                    ),
-                  ],
-                ),
-              );
-            }
+            return fieldReducer.combine(value, other);
           },
           ifAbsent: () {
             return other;
